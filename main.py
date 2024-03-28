@@ -2,7 +2,7 @@ import socket
 import json
 
 
-serverAddress = ('0.0.0.0', 5000)
+serverAddress = ('127.0.0.1', 3000)
 
 connectMsg = {
     "request": "subscribe",
@@ -20,7 +20,7 @@ def connect():
         response = s.recv(2048).decode()
     print(response)
 
-if __name__=='__name__':
+if __name__=='__main__':
     connect()
 
 
