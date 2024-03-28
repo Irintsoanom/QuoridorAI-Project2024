@@ -7,18 +7,22 @@ serverAddress = ('0.0.0.0', 5000)
 connectMsg = {
     "request": "subscribe",
    "port": 8888,
-   "name": "fun_name_for_the_client",
+   "name": "Nomena",
    "matricules": ["22336"]
 }
 
 data = json.dumps(connectMsg)
 
-# def connect():
-#     with socket.socket() as s:
-#         s.bind(serverAddress)
-#         s.listen()
-#         s.settimeout(0.5)
-#         while True:
-#             try:
-#                 client, clientAddress = s.accept()
+def connect():
+    with socket.socket() as s:
+        s.connect(serverAddress)
+        s.sendall(bytes(data,encoding='utf-8'))
+        response = s.recv(2048).decode()
+    print(response)
+
+if __name__=='__name__':
+    connect()
+
+
+
 
