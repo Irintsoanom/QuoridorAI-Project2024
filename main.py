@@ -1,6 +1,7 @@
 import socket
 import json
 import threading
+import time
 
 
 serverAddress = ('127.0.0.1', 3000)
@@ -12,11 +13,6 @@ connectMsg = {
    "name": "Nomena",
    "matricules": ["22336"]
 }
-
-statusRequest = {
-    "request": "ping"
-}
-
 status = {
     "response": "pong"
 }
@@ -32,8 +28,9 @@ def connect():
     print(response)
 
 def statusCheck():
+    print('Listen on port', userPort)
     with socket.socket() as s:
-        s.bind(localAddress, userPort)
+        s.bind((localAddress, userPort))
         s.listen()
         s.settimeout(1)
         while True:
@@ -41,18 +38,27 @@ def statusCheck():
                 client, address = s.accept()
                 with client:
                     check = client.recv(2048).decode(encoding='utf-8')
-                    a = json.dumps(check)
-                    b = json.dumps(statusRequest)
-                    if a == b:
-                        s.connect(serverAddress)
-                        s.sendall(bytes(statusJson, encoding='utf-8'))
+                    a = json.loads(check)
+                    print(a)
+                    if 'request' in a:
+                        if a['request'] == "ping":
+                            client.sendall(bytes(statusJson, encoding='utf-8'))
+                        elif a['request'] == "play":
+                            print("Can't play")
+                    else:
+                        print('No request from the server')
             except socket.timeout:
-                print('Time out : Try again')
-
-thread = threading.Thread(target=statusCheck, daemon=True).start()
+                pass
 
 if __name__=='__main__':
+    thread = threading.Thread(target=statusCheck, daemon=True).start()
     connect()
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        print('bye')
+
 
 
 
