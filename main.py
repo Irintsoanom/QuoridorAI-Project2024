@@ -6,7 +6,7 @@ import random
 
 
 serverAddress = ('127.0.0.1', 3000)
-localAddress, userPort = '0.0.0.0', 7005
+localAddress, userPort = '0.0.0.0', 7042
 
 jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte']
 
@@ -54,8 +54,8 @@ def statusCheck():
                 pass
 
 def play(msg, client):
-    state = msg['state']
-    if msg['current'] == 0:
+    state = msg['state']['current']
+    if state == 0:
         move =   {
             "type": "pawn",
             "position": [[0,3]] 
@@ -70,7 +70,8 @@ def play(msg, client):
         "move": move,
         "message": random.choice(jokeList)
     }
-    client.sendall(bytes(response, encoding='utf-8'))
+    res = json.dumps(response)
+    client.sendall(bytes(res, encoding='utf-8'))
 
 if __name__=='__main__':
     thread = threading.Thread(target=statusCheck, daemon=True).start()
