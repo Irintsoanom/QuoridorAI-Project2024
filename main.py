@@ -2,15 +2,18 @@ import socket
 import json
 import threading
 import time
+import random
 
 
 serverAddress = ('127.0.0.1', 3000)
-localAddress, userPort = '0.0.0.0', 7001
+localAddress, userPort = '0.0.0.0', 7005
+
+jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte']
 
 connectMsg = {
     "request": "subscribe",
    "port": userPort,
-   "name": "Nomena",
+   "name": "Et moi soneuse",
    "matricules": ["22336"]
 }
 status = {
@@ -44,11 +47,30 @@ def statusCheck():
                         if a['request'] == "ping":
                             client.sendall(bytes(statusJson, encoding='utf-8'))
                         elif a['request'] == "play":
-                            print("Can't play")
+                            play(a, client)
                     else:
                         print('No request from the server')
             except socket.timeout:
                 pass
+
+def play(msg, client):
+    state = msg['state']
+    if msg['current'] == 0:
+        move =   {
+            "type": "pawn",
+            "position": [[0,3]] 
+        }
+    else:
+        move =   {
+            "type": "pawn",
+            "position": [[4, 16]] 
+        }
+    response = {
+        "response": "move",
+        "move": move,
+        "message": random.choice(jokeList)
+    }
+    client.sendall(bytes(response, encoding='utf-8'))
 
 if __name__=='__main__':
     thread = threading.Thread(target=statusCheck, daemon=True).start()
