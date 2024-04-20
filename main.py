@@ -49,8 +49,7 @@ def statusCheck():
                             client.sendall(bytes(statusJson, encoding='utf-8'))
                             print('Connection still going...')
                         elif a['request'] == "play":
-                            getState(a)
-                            play(a, client)
+                            play(a)
                     else:
                         print('No request from the server')
             except socket.timeout:
@@ -69,29 +68,8 @@ def getState(request):
     else:
         blockers = state['blockers'][1]
 
-    print(state)
-      
-def play(msg, client):
-    state = msg['state']['current']
-    if state == 0:
-        move =   {
-            "type": "pawn",
-            "position": [[0,3]] 
-        }
-    else:
-        move =   {
-            "type": "pawn",
-            "position": [[4, 16]] 
-        }
-    response = {
-        "response": "move",
-        "move": move,
-        "message": random.choice(jokeList)
-    }
-    res = json.dumps(response)
-    client.sendall(bytes(res, encoding='utf-8'))
-
-
+def play(request, client):
+    pass
 
 if __name__=='__main__':
     thread = threading.Thread(target=statusCheck, daemon=True).start()
