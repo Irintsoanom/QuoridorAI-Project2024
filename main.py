@@ -52,7 +52,7 @@ def statusCheck():
                         print('No request from the server')
             except socket.timeout:
                 pass
-
+            
 def play(msg, client):
     state = msg['state']['current']
     if state == 0:
