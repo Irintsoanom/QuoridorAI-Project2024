@@ -73,6 +73,8 @@ def play(msg, client):
     res = json.dumps(response)
     client.sendall(bytes(res, encoding='utf-8'))
 
+
+
 if __name__=='__main__':
     thread = threading.Thread(target=statusCheck, daemon=True).start()
     connect()
