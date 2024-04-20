@@ -9,11 +9,12 @@ serverAddress = ('127.0.0.1', 3000)
 localAddress, userPort = '0.0.0.0', 7042
 
 jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte']
+myUsername = "Nomena"
 
 connectMsg = {
     "request": "subscribe",
    "port": userPort,
-   "name": "Et moi soneuse",
+   "name": myUsername,
    "matricules": ["22336"]
 }
 status = {
@@ -47,12 +48,28 @@ def statusCheck():
                         if a['request'] == "ping":
                             client.sendall(bytes(statusJson, encoding='utf-8'))
                         elif a['request'] == "play":
+                            getState(a)
                             play(a, client)
                     else:
                         print('No request from the server')
             except socket.timeout:
                 pass
-            
+
+def getState(request):
+    lives = request['lives']
+    errors = request['errors']
+    state = request['state']
+    players = state['players']
+    current = state['current']
+
+    if players.index(myUsername) == 0:
+        blockers = state['blockers'][0]
+    else:
+        blockers = state['blockers'][1]
+    
+    print(f'Je suis {myUsername} et je suis actuellement le joueur num {current}, il me reste {lives} vies et {blockers} murs')
+
+      
 def play(msg, client):
     state = msg['state']['current']
     if state == 0:
