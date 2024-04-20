@@ -6,7 +6,7 @@ import random
 
 
 serverAddress = ('127.0.0.1', 3000)
-localAddress, userPort = '0.0.0.0', 7042
+localAddress, userPort = '0.0.0.0', 35000
 
 jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte']
 myUsername = "Nomena"
@@ -47,6 +47,7 @@ def statusCheck():
                     if 'request' in a:
                         if a['request'] == "ping":
                             client.sendall(bytes(statusJson, encoding='utf-8'))
+                            print('Connection still going...')
                         elif a['request'] == "play":
                             getState(a)
                             play(a, client)
@@ -61,14 +62,12 @@ def getState(request):
     state = request['state']
     players = state['players']
     current = state['current']
+    board = state['board']
 
     if players.index(myUsername) == 0:
         blockers = state['blockers'][0]
     else:
         blockers = state['blockers'][1]
-    
-    print(f'Je suis {myUsername} et je suis actuellement le joueur num {current}, il me reste {lives} vies et {blockers} murs')
-
       
 def play(msg, client):
     state = msg['state']['current']
