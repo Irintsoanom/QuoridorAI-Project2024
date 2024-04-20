@@ -68,6 +68,8 @@ def getState(request):
         blockers = state['blockers'][0]
     else:
         blockers = state['blockers'][1]
+
+    print(state)
       
 def play(msg, client):
     state = msg['state']['current']
