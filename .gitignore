@@ -1,3 +1,4 @@
 *.log
 usefulLinks.txt
 main2.py
+__pycache__
