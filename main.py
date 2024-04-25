@@ -6,17 +6,17 @@ import random
 
 
 serverAddress = ('172.17.10.59', 3000)
-localAddress, userPort = '0.0.0.0', 35000
+localAddress, userPort = '0.0.0.0', 35005
 pos = None
 
 jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum']
-myUsername = "Test"
+myUsername = "Nomenaaaaa"
 
 connectMsg = {
     "request": "subscribe",
    "port": userPort,
    "name": myUsername,
-   "matricules": ["226"]
+   "matricules": ["366"]
 }
 status = {
     "response": "pong"
@@ -28,9 +28,24 @@ statusJson = json.dumps(status)
 def connect():
     with socket.socket() as s:
         s.connect(serverAddress)
-        s.sendall(bytes(data,encoding='utf-8'))
+        s.sendall(bytes(data,encoding='utf8'))
         response = s.recv(2048).decode()
     print(response)
+
+def recv_json(socket: socket.socket):
+    finished = False 
+    msg = b''
+    obj = None
+    while not finished:
+        msg += socket.recv(2048)
+        try:
+            obj = json.loads(msg.decode('utf8'))
+            finished = True
+        except json.JSONDecodeError:
+            pass
+        except UnicodeDecodeError:
+            pass
+    return obj
 
 def statusCheck():
     print('Listen on port', userPort)
@@ -42,8 +57,7 @@ def statusCheck():
             try:
                 client, address = s.accept()
                 with client:
-                    check = client.recv(2048).decode(encoding='utf-8')
-                    a = json.loads(check)
+                    a = recv_json(client)
                     print(a)
                     if 'request' in a:
                         if a['request'] == "ping":
@@ -55,19 +69,6 @@ def statusCheck():
                         print('No request from the server')
             except socket.timeout:
                 pass
-
-def recv_json(socket: socket.socket):
-    finished = False 
-    msg = b''
-    obj = None
-    while not finished:
-        msg += socket.recv(2048)
-        try:
-            obj = json.load(msg.decode('utf-8'))
-        except json.JSONDecodeError:
-            pass
-        except UnicodeDecodeError:
-            pass
 
 def play(request, client):
     lives = request['lives']
