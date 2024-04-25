@@ -5,17 +5,18 @@ import time
 import random
 
 
-serverAddress = ('127.0.0.1', 3000)
+serverAddress = ('172.17.10.59', 3000)
 localAddress, userPort = '0.0.0.0', 35000
+pos = None
 
-jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte']
-myUsername = "Nomena"
+jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum']
+myUsername = "Test"
 
 connectMsg = {
     "request": "subscribe",
    "port": userPort,
    "name": myUsername,
-   "matricules": ["22336"]
+   "matricules": ["226"]
 }
 status = {
     "response": "pong"
@@ -49,16 +50,18 @@ def statusCheck():
                             client.sendall(bytes(statusJson, encoding='utf-8'))
                             print('Connection still going...')
                         elif a['request'] == "play":
-                            play(a)
+                            play(a, client)
                     else:
                         print('No request from the server')
             except socket.timeout:
                 pass
 
-def getState(request):
+def play(request, client):
     lives = request['lives']
     errors = request['errors']
     state = request['state']
+
+    #State
     players = state['players']
     current = state['current']
     board = state['board']
@@ -67,9 +70,36 @@ def getState(request):
         blockers = state['blockers'][0]
     else:
         blockers = state['blockers'][1]
+    current = state['current']
 
-def play(request, client):
-    pass
+    pos = getPos(board, current)
+    print(pos)
+
+    if current == 0:
+        move =   {
+            "type": "pawn",
+            "position": [[0,3]] 
+        }
+    else:
+        move =   {
+            "type": "pawn",
+            "position": [[4, 16]] 
+        }
+    response = {
+        "response": "move",
+        "move": move,
+        "message": random.choice(jokeList)
+    }
+    res = json.dumps(response)
+    client.sendall(bytes(res, encoding='utf-8'))
+
+def getPos(board, current):
+    for i,lst in enumerate(board):
+        for j,player in enumerate(lst):
+            if player == current:
+                return (i, j)
+    return (None, None)
+
 
 if __name__=='__main__':
     thread = threading.Thread(target=statusCheck, daemon=True).start()
