@@ -56,6 +56,19 @@ def statusCheck():
             except socket.timeout:
                 pass
 
+def recv_json(socket: socket.socket):
+    finished = False 
+    msg = b''
+    obj = None
+    while not finished:
+        msg += socket.recv(2048)
+        try:
+            obj = json.load(msg.decode('utf-8'))
+        except json.JSONDecodeError:
+            pass
+        except UnicodeDecodeError:
+            pass
+
 def play(request, client):
     lives = request['lives']
     errors = request['errors']
