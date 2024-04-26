@@ -5,18 +5,18 @@ import time
 import random
 
 
-serverAddress = ('172.17.10.59', 3000)
-localAddress, userPort = '0.0.0.0', 35005
+serverAddress = ('172.20.10.2', 3000)
+localAddress, userPort = '0.0.0.0', 25565
 pos = None
 
-jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum']
-myUsername = "Nomenaaaaa"
+jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum', 'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole']
+myUsername = "Nomena"
 
 connectMsg = {
     "request": "subscribe",
    "port": userPort,
    "name": myUsername,
-   "matricules": ["366"]
+   "matricules": ["22366"]
 }
 status = {
     "response": "pong"
@@ -90,14 +90,16 @@ def play(request, client):
     print(pos)
 
     if current == 0:
+        newPos = [pos[0] + 2, pos[1]]
         move =   {
             "type": "pawn",
-            "position": [[0,3]] 
+            "position": [newPos] 
         }
     else:
+        newPos = [pos[0] - 2, pos[1]]
         move =   {
             "type": "pawn",
-            "position": [[4, 16]] 
+            "position": [newPos] 
         }
     response = {
         "response": "move",
