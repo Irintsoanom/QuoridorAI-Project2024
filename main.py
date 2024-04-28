@@ -5,9 +5,11 @@ import time
 import random
 
 
-serverAddress = ('172.20.10.2', 3000)
-localAddress, userPort = '0.0.0.0', 25565
+serverAddress = ('127.0.0.1', 3000)
+localAddress, userPort = '0.0.0.0', 35042
 pos = None
+adv = None
+enemyPos = None
 
 jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum', 'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole']
 myUsername = "Nomena"
@@ -86,8 +88,16 @@ def play(request, client):
         blockers = state['blockers'][1]
     current = state['current']
 
+    if current == 0:
+        adv = 1
+    else:
+        adv = 0
+
+    print(adv)
     pos = getPos(board, current)
-    print(pos)
+    enemyPos = getPos(board, adv)
+    print(f'Position : {pos} - Enemy : {enemyPos}')
+    print(errors)
 
     if current == 0:
         newPos = [pos[0] + 2, pos[1]]
@@ -115,7 +125,6 @@ def getPos(board, current):
             if player == current:
                 return (i, j)
     return (None, None)
-
 
 if __name__=='__main__':
     thread = threading.Thread(target=statusCheck, daemon=True).start()
