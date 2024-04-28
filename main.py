@@ -63,7 +63,7 @@ def statusCheck():
                     print(a)
                     if 'request' in a:
                         if a['request'] == "ping":
-                            client.sendall(bytes(statusJson, encoding='utf-8'))
+                            client.sendall(bytes(statusJson, encoding='utf8'))
                             print('Connection still going...')
                         elif a['request'] == "play":
                             play(a, client)
@@ -117,7 +117,10 @@ def play(request, client):
         "message": random.choice(jokeList)
     }
     res = json.dumps(response)
-    client.sendall(bytes(res, encoding='utf-8'))
+    client.sendall(bytes(res, encoding='utf8'))
+
+def block():
+    pass
 
 def getPos(board, current):
     for i,lst in enumerate(board):
