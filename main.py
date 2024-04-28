@@ -5,18 +5,20 @@ import time
 import random
 
 
-serverAddress = ('172.17.10.59', 3000)
-localAddress, userPort = '0.0.0.0', 35005
+serverAddress = ('127.0.0.1', 3000)
+localAddress, userPort = '0.0.0.0', 35042
 pos = None
+adv = None
+enemyPos = None
 
-jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum']
-myUsername = "Nomenaaaaa"
+jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum', 'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole']
+myUsername = "Nomena"
 
 connectMsg = {
     "request": "subscribe",
    "port": userPort,
    "name": myUsername,
-   "matricules": ["366"]
+   "matricules": ["22366"]
 }
 status = {
     "response": "pong"
@@ -61,7 +63,7 @@ def statusCheck():
                     print(a)
                     if 'request' in a:
                         if a['request'] == "ping":
-                            client.sendall(bytes(statusJson, encoding='utf-8'))
+                            client.sendall(bytes(statusJson, encoding='utf8'))
                             print('Connection still going...')
                         elif a['request'] == "play":
                             play(a, client)
@@ -86,18 +88,28 @@ def play(request, client):
         blockers = state['blockers'][1]
     current = state['current']
 
+    if current == 0:
+        adv = 1
+    else:
+        adv = 0
+
+    print(adv)
     pos = getPos(board, current)
-    print(pos)
+    enemyPos = getPos(board, adv)
+    print(f'Position : {pos} - Enemy : {enemyPos}')
+    print(errors)
 
     if current == 0:
+        newPos = [pos[0] + 2, pos[1]]
         move =   {
             "type": "pawn",
-            "position": [[0,3]] 
+            "position": [newPos] 
         }
     else:
+        newPos = [pos[0] - 2, pos[1]]
         move =   {
             "type": "pawn",
-            "position": [[4, 16]] 
+            "position": [newPos] 
         }
     response = {
         "response": "move",
@@ -105,7 +117,10 @@ def play(request, client):
         "message": random.choice(jokeList)
     }
     res = json.dumps(response)
-    client.sendall(bytes(res, encoding='utf-8'))
+    client.sendall(bytes(res, encoding='utf8'))
+
+def block():
+    pass
 
 def getPos(board, current):
     for i,lst in enumerate(board):
@@ -113,7 +128,6 @@ def getPos(board, current):
             if player == current:
                 return (i, j)
     return (None, None)
-
 
 if __name__=='__main__':
     thread = threading.Thread(target=statusCheck, daemon=True).start()
