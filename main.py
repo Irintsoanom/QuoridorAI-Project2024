@@ -3,6 +3,7 @@ import json
 import threading
 import time
 import random
+import math
 
 
 serverAddress = ('127.0.0.1', 3000)
@@ -59,18 +60,38 @@ def statusCheck():
             try:
                 client, address = s.accept()
                 with client:
-                    a = recv_json(client)
-                    print(a)
-                    if 'request' in a:
-                        if a['request'] == "ping":
+                    msg = recv_json(client)
+                    print(msg)
+                    if 'request' in msg:
+                        if msg['request'] == "ping":
                             client.sendall(bytes(statusJson, encoding='utf8'))
                             print('Connection still going...')
-                        elif a['request'] == "play":
-                            play(a, client)
+                        elif msg['request'] == "play":
+                            # play(msg, client)
+                            getState(msg)
                     else:
                         print('No request from the server')
             except socket.timeout:
                 pass
+
+def getState(request):
+    lives = request['lives']
+    errors = request['errors']
+    state = request['state']
+    #State
+    players = state['players']
+    current = state['current']
+    board = state['board']
+
+def getPos(board, current):
+    for i,lst in enumerate(board):
+        for j,player in enumerate(lst):
+            if player == current:
+                return (i, j)
+    return (None, None)
+
+def minimax(position, depth, maximizingPlayer):
+    pass
 
 def play(request, client):
     lives = request['lives']
@@ -99,17 +120,18 @@ def play(request, client):
     print(f'Position : {pos} - Enemy : {enemyPos}')
     print(errors)
 
+    blockersList = []
     if current == 0:
         newPos = [pos[0] + 2, pos[1]]
         move =   {
-            "type": "pawn",
-            "position": [newPos] 
+            "type": "blocker",
+            "position": random.choice(blockersList)
         }
     else:
         newPos = [pos[0] - 2, pos[1]]
         move =   {
-            "type": "pawn",
-            "position": [newPos] 
+            "type": "blocker",
+            "position": random.choice(blockersList) 
         }
     response = {
         "response": "move",
@@ -118,16 +140,6 @@ def play(request, client):
     }
     res = json.dumps(response)
     client.sendall(bytes(res, encoding='utf8'))
-
-def block():
-    pass
-
-def getPos(board, current):
-    for i,lst in enumerate(board):
-        for j,player in enumerate(lst):
-            if player == current:
-                return (i, j)
-    return (None, None)
 
 if __name__=='__main__':
     thread = threading.Thread(target=statusCheck, daemon=True).start()
