@@ -40,8 +40,6 @@ class Game:
     def getNextPotentialPositions(self):
         self.playerPosition = self.getPlayerPosition(PlayerType.CURRENT)
         xPos, yPos = self.playerPosition[0], self.playerPosition[1]
-        #Get the board
-        #comparer les valeurs, sachant que xPos et yPos représentent les indices pas les valeurs
         nextPosition = []
         board = self.board
         if self.current == 1:
@@ -49,6 +47,8 @@ class Game:
                 nextPosition.append((xPos - 2, yPos))
             if board[xPos + 1][yPos] == 3:
                 nextPosition.append((xPos + 2, yPos))
+            if board[xPos + 2][yPos] == 1:
+                nextPosition.append((xPos + 4, yPos))
             if board[xPos][yPos - 1] == 3:
                 nextPosition.append((xPos, yPos - 2))
             if board[xPos][yPos + 1] == 3:
@@ -59,12 +59,20 @@ class Game:
                 nextPosition.append((xPos + 2, yPos))
             if board[xPos - 1][yPos] == 3:
                 nextPosition.append((xPos - 2, yPos))
+            if board[xPos - 2][yPos] == 1:
+                nextPosition.append((xPos - 4, yPos))
             if board[xPos][yPos - 1] == 3:
                 nextPosition.append((xPos, yPos - 2))
             if board[xPos][yPos + 1] == 3:
                 nextPosition.append((xPos, yPos + 2))
         return nextPosition
 
+    #get the potential place where I can put the walls
+    #free places are represented by 3 - 5 - 3, occupied places are represented by 4
+    #walls can't completely block any of the players -> How can i check??
+    #a wall can be horizontal or vertical and take 2 places 3 - 5 - 3
+    def getPotentialBlockersPlacements():
+        pass
         
     def getAvailableMove(self):
         pass
