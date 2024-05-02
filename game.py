@@ -12,6 +12,7 @@ class Game:
         self.current = 0
         self.enemy = 1
         self.blockers = [10, 10]
+        self.playerPosition = ()
 
     def setState(self, message):
         state = message['state']
@@ -30,39 +31,41 @@ class Game:
                     return (i, j)
         return (None, None)
     
-    
     def play(self):
-        print(self.getPlayerPosition(PlayerType.CURRENT))
-        print(self.getPlayerPosition(PlayerType.ENEMY))
+        print(f'Player {self.getPlayerPosition(PlayerType.CURRENT)}')
+        print(f'Enemy {self.getPlayerPosition(PlayerType.ENEMY)}')
         nextPotentialPositions = self.getNextPotentialPositions()
-        pass
+        print(nextPotentialPositions)
 
     def getNextPotentialPositions(self):
-        player = self.getPlayerPosition(PlayerType.CURRENT)
-        xPos, yPos = player[0], player[1]
-
-        while 0 <= xPos < 10:
-            #Forward
-            if xPos + 1 == 3  and self.current == 0:
-                nextPosition = (xPos + 2, yPos)
-            elif (xPos - 1 == 3 and self.current == 1):
-                nextPosition = (xPos - 2, yPos)
-
-            #Moving back
-            if xPos + 1 == 3 and self.current == 0:
-                nextPosition = (xPos - 2, yPos)
-            elif xPos - 1 == 3 and self.current == 1:
-                nextPosition = (xPos + 2, yPos)
-
+        self.playerPosition = self.getPlayerPosition(PlayerType.CURRENT)
+        xPos, yPos = self.playerPosition[0], self.playerPosition[1]
+        #Get the board
+        #comparer les valeurs, sachant que xPos et yPos représentent les indices pas les valeurs
+        nextPosition = []
+        board = self.board
+        if self.current == 1:
+            if board[xPos - 1][yPos] == 3:
+                nextPosition.append((xPos - 2, yPos))
+            if board[xPos + 1][yPos] == 3:
+                nextPosition.append((xPos + 2, yPos))
+            if board[xPos][yPos - 1] == 3:
+                nextPosition.append((xPos, yPos - 2))
+            if board[xPos][yPos + 1] == 3:
+                nextPosition.append((xPos, yPos + 2))
         
-        #Moving left and right
-        while 0 <= yPos < 17:
-            if yPos - 1 == 3:
-                nextPosition = (xPos, yPos - 2)
-            else:
-                nextPosition = (xPos, yPos + 2)
+        elif self.current == 0:
+            if board[xPos + 1][yPos] == 3:
+                nextPosition.append((xPos + 2, yPos))
+            if board[xPos - 1][yPos] == 3:
+                nextPosition.append((xPos - 2, yPos))
+            if board[xPos][yPos - 1] == 3:
+                nextPosition.append((xPos, yPos - 2))
+            if board[xPos][yPos + 1] == 3:
+                nextPosition.append((xPos, yPos + 2))
 
         return nextPosition
+
         
     def getAvailableMove(self):
         pass
