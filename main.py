@@ -4,6 +4,7 @@ import threading
 import time
 import random
 import math
+from game import Game
 
 
 serverAddress = ('127.0.0.1', 3000)
@@ -13,13 +14,13 @@ adv = None
 enemyPos = None
 
 jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum', 'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole']
-myUsername = "Nomena"
+myUsername = "Joueur principal"
 
 connectMsg = {
     "request": "subscribe",
    "port": userPort,
    "name": myUsername,
-   "matricules": ["22366"]
+   "matricules": ["1"]
 }
 status = {
     "response": "pong"
@@ -50,6 +51,8 @@ def recv_json(socket: socket.socket):
             pass
     return obj
 
+game = Game()
+
 def statusCheck():
     print('Listen on port', userPort)
     with socket.socket() as s:
@@ -61,85 +64,35 @@ def statusCheck():
                 client, address = s.accept()
                 with client:
                     msg = recv_json(client)
-                    print(msg)
                     if 'request' in msg:
                         if msg['request'] == "ping":
                             client.sendall(bytes(statusJson, encoding='utf8'))
                             print('Connection still going...')
                         elif msg['request'] == "play":
-                            # play(msg, client)
-                            getState(msg)
+                            print('Game starting')
+                            game.setState(msg)
+                            game.play()
                     else:
                         print('No request from the server')
             except socket.timeout:
                 pass
 
-def getState(request):
-    lives = request['lives']
-    errors = request['errors']
-    state = request['state']
-    #State
-    players = state['players']
-    current = state['current']
-    board = state['board']
-
-def getPos(board, current):
-    for i,lst in enumerate(board):
-        for j,player in enumerate(lst):
-            if player == current:
-                return (i, j)
-    return (None, None)
-
 def minimax(position, depth, maximizingPlayer):
-    pass
-
-def play(request, client):
-    lives = request['lives']
-    errors = request['errors']
-    state = request['state']
-
-    #State
-    players = state['players']
-    current = state['current']
-    board = state['board']
-
-    if players.index(myUsername) == 0:
-        blockers = state['blockers'][0]
+    if depth == 0:
+        return position
+    
+    if maximizingPlayer:
+        maxEval = -math.inf
+        for i in position:
+            eval = minimax(i, depth-1, False)
+            maxEval = max(maxEval, eval)
+        return maxEval
     else:
-        blockers = state['blockers'][1]
-    current = state['current']
-
-    if current == 0:
-        adv = 1
-    else:
-        adv = 0
-
-    print(adv)
-    pos = getPos(board, current)
-    enemyPos = getPos(board, adv)
-    print(f'Position : {pos} - Enemy : {enemyPos}')
-    print(errors)
-
-    blockersList = []
-    if current == 0:
-        newPos = [pos[0] + 2, pos[1]]
-        move =   {
-            "type": "blocker",
-            "position": random.choice(blockersList)
-        }
-    else:
-        newPos = [pos[0] - 2, pos[1]]
-        move =   {
-            "type": "blocker",
-            "position": random.choice(blockersList) 
-        }
-    response = {
-        "response": "move",
-        "move": move,
-        "message": random.choice(jokeList)
-    }
-    res = json.dumps(response)
-    client.sendall(bytes(res, encoding='utf8'))
+        minEval = math.inf
+        for i in position:
+            eval = minimax(i, depth-1, True)
+            minEval = min(minEval, eval)
+        return minEval
 
 if __name__=='__main__':
     thread = threading.Thread(target=statusCheck, daemon=True).start()
@@ -149,8 +102,3 @@ if __name__=='__main__':
             time.sleep(1)
     except KeyboardInterrupt:
         print('Bye')
-
-
-
-
-
