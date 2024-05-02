@@ -63,7 +63,6 @@ class Game:
                 nextPosition.append((xPos, yPos - 2))
             if board[xPos][yPos + 1] == 3:
                 nextPosition.append((xPos, yPos + 2))
-
         return nextPosition
 
         
