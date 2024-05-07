@@ -68,15 +68,7 @@ class Game:
             if board[xPos][yPos + 1] == 3:
                 nextPosition.append((xPos, yPos + 2))
         return nextPosition
-
-    #get the potential place where I can put the walls
-    #free places are represented by 3 - 5 - 3, occupied places are represented by 4
-    #walls can't completely block any of the players -> How can i check??
-    #a wall can be horizontal or vertical and take 2 places 3 - 5 - 3
-    #Comment ?
-    #chercher les positions dans le tableau 3
-    #vérifier si le schéma 3 - 5 - 3 est réspecté
-    #si l'index en y de 3 est paire alors vérifier si index + 2 = 3 aussi alors dans ce cas la place est libre
+    
     def getPotentialBlockersPlacements(self):
         freePlaces = []
         for i, list in enumerate(self.board):
@@ -90,10 +82,10 @@ class Game:
         freePlaces = self.getPotentialBlockersPlacements()
         for elem in freePlaces:
             x, y = elem[0], elem[1]
-            if (x, y+2) in freePlaces:
-                placement.append(f'Horizontal : {[(x, y), (x, y+2)]}')
-            if (x+2, y) in freePlaces:
-                placement.append(f'Vertical : {[(x,y), (x+2, y)]}') 
+            if (x, y+2) in freePlaces and (x-1, y+1) in freePlaces and (x+1, y+1) in freePlaces:
+                placement.append([(x, y), (x, y+2)])
+            if (x+2, y) in freePlaces and (x+1, y-1) in freePlaces and (x+1, y+1) in freePlaces:
+                placement.append([(x,y), (x+2, y)]) 
         return placement
 
     #faire une fonction eval qui calcule la distance qui sépare du côté opposé
