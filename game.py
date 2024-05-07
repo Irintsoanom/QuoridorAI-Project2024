@@ -91,15 +91,10 @@ class Game:
         for elem in freePlaces:
             x, y = elem[0], elem[1]
             if (x, y+2) in freePlaces:
-                placement.append([(x, y), (x, y+2)])
+                placement.append(f'Horizontal : {[(x, y), (x, y+2)]}')
             if (x+2, y) in freePlaces:
-                placement.append([(x,y), (x+2, y)]) 
+                placement.append(f'Vertical : {[(x,y), (x+2, y)]}') 
         return placement
-        
-    #for elem in freePlaces:
-    #x = elem[0] et y = elem[1]
-    #if (x, y + 2) in list
-    #Place.append([(x,y), (x, y + 2)])
 
     #faire une fonction eval qui calcule la distance qui sépare du côté opposé
     def getAvailableMove(self):
