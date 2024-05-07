@@ -35,13 +35,13 @@ class Game:
         print(f'Player {self.getPlayerPosition(PlayerType.CURRENT)}')
         print(f'Enemy {self.getPlayerPosition(PlayerType.ENEMY)}')
         nextPotentialPositions = self.getNextPotentialPositions()
-        print(nextPotentialPositions)
+        print(f'Potential next position : {nextPotentialPositions}')
+        print(self.getPotentialBlockersPlacements())
+        print(self.blockersPlacements())
 
     def getNextPotentialPositions(self):
         self.playerPosition = self.getPlayerPosition(PlayerType.CURRENT)
         xPos, yPos = self.playerPosition[0], self.playerPosition[1]
-        #Get the board
-        #comparer les valeurs, sachant que xPos et yPos représentent les indices pas les valeurs
         nextPosition = []
         board = self.board
         if self.current == 1:
@@ -49,6 +49,8 @@ class Game:
                 nextPosition.append((xPos - 2, yPos))
             if board[xPos + 1][yPos] == 3:
                 nextPosition.append((xPos + 2, yPos))
+            if board[xPos + 2][yPos] == 1:
+                nextPosition.append((xPos + 4, yPos))
             if board[xPos][yPos - 1] == 3:
                 nextPosition.append((xPos, yPos - 2))
             if board[xPos][yPos + 1] == 3:
@@ -59,13 +61,34 @@ class Game:
                 nextPosition.append((xPos + 2, yPos))
             if board[xPos - 1][yPos] == 3:
                 nextPosition.append((xPos - 2, yPos))
+            if board[xPos - 2][yPos] == 1:
+                nextPosition.append((xPos - 4, yPos))
             if board[xPos][yPos - 1] == 3:
                 nextPosition.append((xPos, yPos - 2))
             if board[xPos][yPos + 1] == 3:
                 nextPosition.append((xPos, yPos + 2))
         return nextPosition
+    
+    def getPotentialBlockersPlacements(self):
+        freePlaces = []
+        for i, list in enumerate(self.board):
+            for j, item in enumerate(list):
+                if item == 3:
+                    freePlaces.append((i, j))
+        return freePlaces
+    
+    def blockersPlacements(self):
+        placement = []
+        freePlaces = self.getPotentialBlockersPlacements()
+        for elem in freePlaces:
+            x, y = elem[0], elem[1]
+            if (x, y+2) in freePlaces and (x-1, y+1) in freePlaces and (x+1, y+1) in freePlaces:
+                placement.append([(x, y), (x, y+2)])
+            if (x+2, y) in freePlaces and (x+1, y-1) in freePlaces and (x+1, y+1) in freePlaces:
+                placement.append([(x,y), (x+2, y)]) 
+        return placement
 
-        
+    #faire une fonction eval qui calcule la distance qui sépare du côté opposé
     def getAvailableMove(self):
         pass
 
