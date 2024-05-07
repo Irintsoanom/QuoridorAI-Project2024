@@ -35,7 +35,9 @@ class Game:
         print(f'Player {self.getPlayerPosition(PlayerType.CURRENT)}')
         print(f'Enemy {self.getPlayerPosition(PlayerType.ENEMY)}')
         nextPotentialPositions = self.getNextPotentialPositions()
-        print(nextPotentialPositions)
+        print(f'Potential next position : {nextPotentialPositions}')
+        print(self.getPotentialBlockersPlacements())
+        print(self.blockersPlacements())
 
     def getNextPotentialPositions(self):
         self.playerPosition = self.getPlayerPosition(PlayerType.CURRENT)
@@ -71,9 +73,35 @@ class Game:
     #free places are represented by 3 - 5 - 3, occupied places are represented by 4
     #walls can't completely block any of the players -> How can i check??
     #a wall can be horizontal or vertical and take 2 places 3 - 5 - 3
-    def getPotentialBlockersPlacements():
-        pass
+    #Comment ?
+    #chercher les positions dans le tableau 3
+    #vérifier si le schéma 3 - 5 - 3 est réspecté
+    #si l'index en y de 3 est paire alors vérifier si index + 2 = 3 aussi alors dans ce cas la place est libre
+    def getPotentialBlockersPlacements(self):
+        freePlaces = []
+        for i, list in enumerate(self.board):
+            for j, item in enumerate(list):
+                if item == 3:
+                    freePlaces.append((i, j))
+        return freePlaces
+    
+    def blockersPlacements(self):
+        placement = []
+        freePlaces = self.getPotentialBlockersPlacements()
+        for elem in freePlaces:
+            x, y = elem[0], elem[1]
+            if (x, y+2) in freePlaces:
+                placement.append([(x, y), (x, y+2)])
+            if (x+2, y) in freePlaces:
+                placement.append([(x,y), (x+2, y)]) 
+        return placement
         
+    #for elem in freePlaces:
+    #x = elem[0] et y = elem[1]
+    #if (x, y + 2) in list
+    #Place.append([(x,y), (x, y + 2)])
+
+    #faire une fonction eval qui calcule la distance qui sépare du côté opposé
     def getAvailableMove(self):
         pass
 
