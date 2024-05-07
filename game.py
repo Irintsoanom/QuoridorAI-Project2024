@@ -82,21 +82,17 @@ class Game:
         freePlaces = self.getPotentialBlockersPlacements()
         for elem in freePlaces:
             x, y = elem[0], elem[1]
+            #Perpendiculaire non réglé A CORRIGER ABSOLUMENT
             if (x, y+2) in freePlaces and (x-1, y+1) in freePlaces and (x+1, y+1) in freePlaces:
                 placement.append([(x, y), (x, y+2)])
             if (x+2, y) in freePlaces and (x+1, y-1) in freePlaces and (x+1, y+1) in freePlaces:
                 placement.append([(x,y), (x+2, y)]) 
         return placement
 
-    #faire une fonction eval qui calcule la distance qui sépare du côté opposé
-    def getAvailableMove(self):
-        pass
-
-    def isPieceOccupied(self):
-        pass
-
-    def isWallOccupied(self):
-        pass
-
-    def __str__(self):
-      return f"My state is {self.lives}"
+    def positionFeature(self):
+        playerPosition = self.getPlayerPosition(PlayerType.CURRENT)
+        positionMapping = {16:0, 14:2, 12:4, 10:6, 8:8, 6:10, 4:12, 2:14, 0:16}
+        if self.current == 0:
+            return playerPosition[0]
+        else:
+            return positionMapping.get(playerPosition[0], None)
