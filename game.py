@@ -96,3 +96,12 @@ class Game:
             return playerPosition[0]
         else:
             return positionMapping.get(playerPosition[0], None)
+
+    def positionDifference(self):
+        playerPosition = self.getPlayerPosition(PlayerType.CURRENT)
+        enemyPosition = self.getPlayerPosition(PlayerType.ENEMY)
+        diff = abs(playerPosition[0]- enemyPosition[0])
+        return diff
+    
+    def movesToNextColumn(self):
+        pass
