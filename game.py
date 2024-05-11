@@ -104,4 +104,16 @@ class Game:
         return diff
     
     def movesToNextColumn(self):
-        pass
+        playerPosition = self.getPlayerPosition(PlayerType.CURRENT)
+        xPos = playerPosition[0]
+        yPos = playerPosition[1]
+        board = self.board
+        yLeft = yPos
+        yRight = yPos
+        while board[xPos + 1] == 4:
+            yLeft -= 1
+            yRight += 1
+        xPos += 1
+        return (xPos, min(yLeft, yRight))
+
+    
