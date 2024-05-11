@@ -114,6 +114,6 @@ class Game:
             yLeft -= 1
             yRight += 1
         xPos += 1
-        return (xPos, min(yLeft, yRight))
-
+        yOptimum = min(yLeft, yRight)
+        return [(xPos, yOptimum), yOptimum - yPos]
     
