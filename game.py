@@ -39,6 +39,9 @@ class Game:
         jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum', 'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole']
         move = self.bestMove()
         block = self.bestBlockerPosition()
+        print('here')
+        print(move)
+        print(block)
         best = max(move[1], block[1])
         if best in move:
             moveType = {
@@ -63,29 +66,39 @@ class Game:
         xPos, yPos = self.playerPosition[0], self.playerPosition[1]
         nextPosition = []
         board = self.board
-        if self.current == 1:
-            if board[xPos - 1][yPos] == 3:
-                nextPosition.append([xPos - 2, yPos])
-            if board[xPos + 1][yPos] == 3:
-                nextPosition.append([xPos + 2, yPos])
-            if board[xPos + 2][yPos] == 1:
-                nextPosition.append([xPos + 4, yPos])
-            if board[xPos][yPos - 1] == 3:
-                nextPosition.append([xPos, yPos - 2])
-            if board[xPos][yPos + 1] == 3:
-                nextPosition.append([xPos, yPos + 2])
+        rows, cols = len(board), len(board[0])
+
+        def isMovePossible(x, y, stepX, stepY, conditionVal):
+            newX, newY = x + stepX, y + stepY
+            if 0 <= newX < rows and 0 <= newY < cols and board[newX][newY] == conditionVal:
+                return True
+            return False
         
-        elif self.current == 0:
-            if board[xPos + 1][yPos] == 3:
-                nextPosition.append([xPos + 2, yPos])
-            if board[xPos - 1][yPos] == 3:
+        if self.current == 1:
+            if isMovePossible(xPos, yPos, -1, 0, 3):
                 nextPosition.append([xPos - 2, yPos])
-            if board[xPos - 2][yPos] == 1:
-                nextPosition.append([xPos - 4, yPos])
-            if board[xPos][yPos - 1] == 3:
+            if isMovePossible(xPos, yPos, 1, 0, 3):
+                nextPosition.append([xPos + 2, yPos])
+            if isMovePossible(xPos, yPos, 2, 0, 0):
+                nextPosition.append([xPos + 4, yPos])
+            if isMovePossible(xPos, yPos, 0, -1, 3):
                 nextPosition.append([xPos, yPos - 2])
-            if board[xPos][yPos + 1] == 3:
+            if isMovePossible(xPos, yPos, 0, 1, 3):
                 nextPosition.append([xPos, yPos + 2])
+
+        elif self.current == 0:
+            if isMovePossible(xPos, yPos, 1, 0, 3):
+                nextPosition.append([xPos + 2, yPos])
+            if isMovePossible(xPos, yPos, -1, 0, 3):
+                nextPosition.append([xPos - 2, yPos])
+            if isMovePossible(xPos, yPos, -2, 0, 1):
+                nextPosition.append([xPos - 4, yPos])
+            if isMovePossible(xPos, yPos, 0, -1, 3):
+                nextPosition.append([xPos, yPos - 2])
+            if isMovePossible(xPos, yPos, 0, 1, 3):
+                nextPosition.append([xPos, yPos + 2])
+
+        print(nextPosition)
         return nextPosition
     
     def getPotentialBlockersPlacements(self):
@@ -148,23 +161,30 @@ class Game:
         yPos = playerPosition[1]
         yLeft = yPos
         yRight = yPos
-        while mockBoard[xPos + 1] == 4 and 0 < yLeft < 17 and 0 < yRight < 17:
-            yLeft -= 1
-            yRight += 1
-        xPos += 1
-        yOptimum = min(yLeft, yRight)
-        return [(xPos, yOptimum), yOptimum - yPos]
+        try:
+            if mockBoard[xPos + 1] == 4 and 0 < yLeft < 17 and 0 < yRight < 17:
+                yLeft -= 1
+                yRight += 1
+            xPos += 1
+            yOptimum = min(yLeft, yRight)
+            return yOptimum - yPos
+        except IndexError:
+            return 0
         
     def evaluate(self, mockBoard):
         positionFeature = self.positionFeature(mockBoard)
         positionDiff = self.positionDifference(mockBoard)
         moveToNext = self.movesToNextColumn(mockBoard)
-        return positionFeature + positionDiff + moveToNext[1]
+        return positionFeature + positionDiff + moveToNext
     
     def bestMove(self):
         bestScore = -math.inf
         bestMove = None
+        print('best positions')
+        print(self.getNextPotentialPositions())
         for position in self.getNextPotentialPositions():
+            print('position')
+            print(position)
             score = self.simulateMove(position)
             if score > bestScore:
                 bestMove = position
