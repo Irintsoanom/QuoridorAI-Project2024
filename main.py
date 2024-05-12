@@ -13,7 +13,6 @@ pos = None
 adv = None
 enemyPos = None
 
-jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum', 'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole']
 myUsername = "Joueur principal"
 
 connectMsg = {
@@ -71,28 +70,12 @@ def statusCheck():
                         elif msg['request'] == "play":
                             print('Game starting')
                             game.setState(msg)
-                            game.play()
+                            play = game.play()
+                            client.sendall(bytes(play, encoding="utf8"))
                     else:
                         print('No request from the server')
             except socket.timeout:
                 pass
-
-def minimax(position, depth, maximizingPlayer):
-    if depth == 0:
-        return position
-    
-    if maximizingPlayer:
-        maxEval = -math.inf
-        for i in position:
-            eval = minimax(i, depth-1, False)
-            maxEval = max(maxEval, eval)
-        return maxEval
-    else:
-        minEval = math.inf
-        for i in position:
-            eval = minimax(i, depth-1, True)
-            minEval = min(minEval, eval)
-        return minEval
 
 if __name__=='__main__':
     thread = threading.Thread(target=statusCheck, daemon=True).start()
