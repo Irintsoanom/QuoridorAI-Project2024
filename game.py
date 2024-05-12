@@ -1,6 +1,7 @@
 from enum import Enum
 import math
 import copy
+import json
 
 class PlayerType(Enum):
     ENEMY = 'ENEMY'
@@ -34,14 +35,28 @@ class Game:
         return (None, None)
     
     def play(self):
+        moveType = None
+        jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum', 'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole']
         move = self.bestMove()
         block = self.bestBlockerPosition()
-        best = max(move[0], block[0])
+        best = max(move[1], block[1])
         if best in move:
-            #envoyer l'instruction move
-            pass
+            moveType = {
+                "type" : "pawn",
+                "position": [move[0]]
+            }
         elif best in block:
-            pass
+            moveType = {
+                "type" : "pawn",
+                "position": [block[0]]
+            }
+        request = {
+                "response": "move",
+                "move": moveType,
+                "message": "Fun message"
+                }
+        message = json.dumps(request)
+        return message
 
     def getNextPotentialPositions(self):
         self.playerPosition = self.getPlayerPosition(PlayerType.CURRENT, self.board)
@@ -50,27 +65,27 @@ class Game:
         board = self.board
         if self.current == 1:
             if board[xPos - 1][yPos] == 3:
-                nextPosition.append((xPos - 2, yPos))
+                nextPosition.append([xPos - 2, yPos])
             if board[xPos + 1][yPos] == 3:
-                nextPosition.append((xPos + 2, yPos))
+                nextPosition.append([xPos + 2, yPos])
             if board[xPos + 2][yPos] == 1:
-                nextPosition.append((xPos + 4, yPos))
+                nextPosition.append([xPos + 4, yPos])
             if board[xPos][yPos - 1] == 3:
-                nextPosition.append((xPos, yPos - 2))
+                nextPosition.append([xPos, yPos - 2])
             if board[xPos][yPos + 1] == 3:
-                nextPosition.append((xPos, yPos + 2))
+                nextPosition.append([xPos, yPos + 2])
         
         elif self.current == 0:
             if board[xPos + 1][yPos] == 3:
-                nextPosition.append((xPos + 2, yPos))
+                nextPosition.append([xPos + 2, yPos])
             if board[xPos - 1][yPos] == 3:
-                nextPosition.append((xPos - 2, yPos))
+                nextPosition.append([xPos - 2, yPos])
             if board[xPos - 2][yPos] == 1:
-                nextPosition.append((xPos - 4, yPos))
+                nextPosition.append([xPos - 4, yPos])
             if board[xPos][yPos - 1] == 3:
-                nextPosition.append((xPos, yPos - 2))
+                nextPosition.append([xPos, yPos - 2])
             if board[xPos][yPos + 1] == 3:
-                nextPosition.append((xPos, yPos + 2))
+                nextPosition.append([xPos, yPos + 2])
         return nextPosition
     
     def getPotentialBlockersPlacements(self):
@@ -88,9 +103,9 @@ class Game:
             x, y = elem[0], elem[1]
             #Perpendiculaire non réglé A CORRIGER ABSOLUMENT
             if (x, y+2) in freePlaces and (x-1, y+1) in freePlaces and (x+1, y+1) in freePlaces:
-                placement.append([(x, y), (x, y+2)])
+                placement.append([[x, y], [x, y+2]])
             if (x+2, y) in freePlaces and (x+1, y-1) in freePlaces and (x+1, y+1) in freePlaces:
-                placement.append([(x,y), (x+2, y)]) 
+                placement.append([[x,y], [x+2, y]]) 
         return placement
     
     def simulateMove(self, move):
@@ -101,7 +116,7 @@ class Game:
         mockBoard[x][y] = 2
         print(f'{newX} et y : {newY}')
         mockBoard[newX][newY] = self.current
-        return self.evaluate(move, mockBoard)
+        return self.evaluate(mockBoard)
     
     def simulateBlocking(self, position):
         mockBoard = copy.deepcopy(self.board)
@@ -112,10 +127,10 @@ class Game:
             c, d = second[0], second[1]
             mockBoard[a][b] = 4
             mockBoard[c][d] = 4
-            return self.evaluate(position, mockBoard)
+            return self.evaluate(mockBoard)
 
         
-    def positionFeature(self, move, mockBoard):
+    def positionFeature(self, mockBoard):
         playerPosition = self.getPlayerPosition(PlayerType.CURRENT, mockBoard)
         positionMapping = {16:0, 14:2, 12:4, 10:6, 8:8, 6:10, 4:12, 2:14, 0:16}
         if self.current == 0:
@@ -123,14 +138,14 @@ class Game:
         else:
             return positionMapping.get(playerPosition[0], None)
 
-    def positionDifference(self, move, mockBoard):
+    def positionDifference(self, mockBoard):
         playerPosition = self.getPlayerPosition(PlayerType.CURRENT, mockBoard)
         enemyPosition = self.getPlayerPosition(PlayerType.ENEMY, mockBoard)
         diff = abs(playerPosition[0] - enemyPosition[0])
         print(f'player : {playerPosition}, Enemy : {enemyPosition}')
         return diff
     
-    def movesToNextColumn(self, move, mockBoard):
+    def movesToNextColumn(self, mockBoard):
         playerPosition = self.getPlayerPosition(PlayerType.CURRENT, mockBoard)
         xPos = playerPosition[0]
         yPos = playerPosition[1]
@@ -143,10 +158,10 @@ class Game:
         yOptimum = min(yLeft, yRight)
         return [(xPos, yOptimum), yOptimum - yPos]
         
-    def evaluate(self, move, mockBoard):
-        positionFeature = self.positionFeature(move)
-        positionDiff = self.positionDifference(move)
-        moveToNext = self.movesToNextColumn(move)
+    def evaluate(self, mockBoard):
+        positionFeature = self.positionFeature(mockBoard)
+        positionDiff = self.positionDifference(mockBoard)
+        moveToNext = self.movesToNextColumn(mockBoard)
         return positionFeature + positionDiff + moveToNext[1]
     
     def bestMove(self):
@@ -166,9 +181,9 @@ class Game:
             for emptyPlaces in self.blockersPlacements():
                 score = self.simulateBlocking(emptyPlaces)
                 if score > bestScore:
-                    bestMove = emptyPlaces
+                    bestBlockersPlacement = emptyPlaces
                     bestScore = score
-                    return [bestMove, bestScore]
+                    return [bestBlockersPlacement, bestScore]
         else:
             return [None, -math.inf]
             
