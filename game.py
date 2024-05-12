@@ -121,13 +121,10 @@ class Game:
     def simulateBlocking(self, position):
         mockBoard = copy.deepcopy(self.board)
         for elem in position:
-            first = elem[0]
-            second = elem[1]
-            a, b = first[0], first[1]
-            c, d = second[0], second[1]
-            mockBoard[a][b] = 4
-            mockBoard[c][d] = 4
-            return self.evaluate(mockBoard)
+            newX = elem[0]
+            newY = elem[1]
+            mockBoard[newX][newY] = 4
+        return self.evaluate(mockBoard)
 
         
     def positionFeature(self, mockBoard):
@@ -177,7 +174,8 @@ class Game:
     def bestBlockerPosition(self):
         bestScore = -math.inf
         bestBlockersPlacement = None
-        if self.blockers > 0:
+        myBlockers = self.blockers[self.current]
+        if myBlockers > 0:
             for emptyPlaces in self.blockersPlacements():
                 score = self.simulateBlocking(emptyPlaces)
                 if score > bestScore:
