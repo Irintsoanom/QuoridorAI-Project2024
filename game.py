@@ -34,15 +34,14 @@ class Game:
         return (None, None)
     
     def play(self):
-        bestScore = -math.inf
-        bestMove = None
-        for move in self.getNextPotentialPositions():
-            simulatedBoard = self.simulateMove(move)
-            score = self.minimax(simulatedBoard, 2, True)
-            if score > bestScore:
-                bestScore = score
-                bestMove = move
-                print(f"Best move: {bestMove} with score {bestScore}")
+        move = self.bestMove()
+        block = self.bestBlockerPosition()
+        best = max(move[0], block[0])
+        if best in move:
+            #envoyer l'instruction move
+            pass
+        elif best in block:
+            pass
 
     def getNextPotentialPositions(self):
         self.playerPosition = self.getPlayerPosition(PlayerType.CURRENT, self.board)
@@ -102,10 +101,21 @@ class Game:
         mockBoard[x][y] = 2
         print(f'{newX} et y : {newY}')
         mockBoard[newX][newY] = self.current
-        return mockBoard
+        return self.evaluate(move, mockBoard)
+    
+    def simulateBlocking(self, position):
+        mockBoard = copy.deepcopy(self.board)
+        for elem in position:
+            first = elem[0]
+            second = elem[1]
+            a, b = first[0], first[1]
+            c, d = second[0], second[1]
+            mockBoard[a][b] = 4
+            mockBoard[c][d] = 4
+            return self.evaluate(position, mockBoard)
+
         
-    def positionFeature(self, move):
-        mockBoard = self.simulateMove(move)
+    def positionFeature(self, move, mockBoard):
         playerPosition = self.getPlayerPosition(PlayerType.CURRENT, mockBoard)
         positionMapping = {16:0, 14:2, 12:4, 10:6, 8:8, 6:10, 4:12, 2:14, 0:16}
         if self.current == 0:
@@ -113,16 +123,14 @@ class Game:
         else:
             return positionMapping.get(playerPosition[0], None)
 
-    def positionDifference(self, move):
-        mockBoard = self.simulateMove(move)
+    def positionDifference(self, move, mockBoard):
         playerPosition = self.getPlayerPosition(PlayerType.CURRENT, mockBoard)
         enemyPosition = self.getPlayerPosition(PlayerType.ENEMY, mockBoard)
         diff = abs(playerPosition[0] - enemyPosition[0])
         print(f'player : {playerPosition}, Enemy : {enemyPosition}')
         return diff
     
-    def movesToNextColumn(self, move):
-        mockBoard = self.simulateMove(move)
+    def movesToNextColumn(self, move, mockBoard):
         playerPosition = self.getPlayerPosition(PlayerType.CURRENT, mockBoard)
         xPos = playerPosition[0]
         yPos = playerPosition[1]
@@ -135,19 +143,35 @@ class Game:
         yOptimum = min(yLeft, yRight)
         return [(xPos, yOptimum), yOptimum - yPos]
         
-    def evaluate(self, move):
+    def evaluate(self, move, mockBoard):
         positionFeature = self.positionFeature(move)
         positionDiff = self.positionDifference(move)
         moveToNext = self.movesToNextColumn(move)
         return positionFeature + positionDiff + moveToNext[1]
     
-    #faire une simulation
-    #récupérer le score
-    #refaire une simulation
-    #si score est supérieur à bestScore alors garder le score et le move qui va avec
+    def bestMove(self):
+        bestScore = -math.inf
+        bestMove = None
+        for position in self.getNextPotentialPositions():
+            score = self.simulateMove(position)
+            if score > bestScore:
+                bestMove = position
+                bestScore = score
+                return [bestMove, bestScore]
 
-    def bestMove(self, depth):
-        pass
+    def bestBlockerPosition(self):
+        bestScore = -math.inf
+        bestBlockersPlacement = None
+        if self.blockers > 0:
+            for emptyPlaces in self.blockersPlacements():
+                score = self.simulateBlocking(emptyPlaces)
+                if score > bestScore:
+                    bestMove = emptyPlaces
+                    bestScore = score
+                    return [bestMove, bestScore]
+        else:
+            return [None, -math.inf]
+            
     
     def minimax(self, board, depth, maximizingPlayer):
         if depth == 0:
