@@ -37,7 +37,7 @@ class Game:
     
     def play(self):
         jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum', 'Wesh alors', 
-                    'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole']
+                    'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole', 'Quoi - feur']
         
         potential_moves = self.getNextPotentialPositions()
         potential_blocks = self.blockersPlacements() if self.blockers[self.current] > 0 else []
