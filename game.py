@@ -42,7 +42,6 @@ class Game:
         potential_moves = self.getNextPotentialPositions()
         potential_blocks = self.blockersPlacements() if self.blockers[self.current] > 0 else []
 
-        availablePlaces = self.getPotentialBlockersPlacements()
         
         print("Potential moves:", potential_moves)
         # print("Potential blocks:", potential_blocks)
