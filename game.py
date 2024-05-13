@@ -45,7 +45,6 @@ class Game:
             potentialBlocks = self.blockersPlacements()
             if potentialBlocks and self.blockers[self.current] > 0:
                 chosenBlock = random.choice(potentialBlocks)
-                self.simulateBlocking(self.board, chosenBlock[0])
                 moveType = {"type": "blocker", "position": chosenBlock}
                 print(f"Random Block: {chosenBlock}")
             else:
@@ -57,7 +56,7 @@ class Game:
                 return json.dumps({"response": "pass"}) 
             firstAction = bestSequence[0]
             xPos, yPos = firstAction
-            moveType = {"type": "pawn", "position": [xPos, yPos]}
+            moveType = {"type": "pawn", "position": [[xPos, yPos]]}
             print(f"Pawn move: {firstAction}")
 
         self.moveCount += 1  
@@ -132,13 +131,12 @@ class Game:
         mockBoard[newX][newY] = self.current
         return self.evaluate(mockBoard)
     
-    def simulateBlocking(self,mockBoard, position):
-        print(f'Blockers : {position}')
-        for elem in position:
-            newX = elem[0]
-            newY = elem[1]
-            mockBoard[newX][newY] = 4
-            return self.evaluate(mockBoard)
+    # def simulateBlocking(self,mockBoard, position):
+    #     for elem in position:
+    #         newX = elem[0]
+    #         newY = elem[1]
+    #         mockBoard[newX][newY] = 4
+    #         return self.evaluate(mockBoard)
         
     def positionFeature(self, mockBoard):
         playerPosition = self.getPlayerPosition(PlayerType.CURRENT, mockBoard)
