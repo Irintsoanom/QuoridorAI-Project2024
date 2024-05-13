@@ -76,22 +76,18 @@ class Game:
             (0, -1)  # Left
         ]
 
-        forward_moves = []
-        backward_moves = []
-
         for dx, dy in directions:
-            blocker_x, blocker_y = xPos + dx, yPos + dy
+            adjacent_x, adjacent_y = xPos + dx, yPos + dy
             target_x, target_y = xPos + 2 * dx, yPos + 2 * dy
 
-            if (self.current == 0 and dx > 0) or (self.current == 1 and dx < 0):
-                forward_moves.append([target_x, target_y])
-            else:
-                backward_moves.append([target_x, target_y])
+            if 0 <= adjacent_x < rows and 0 <= adjacent_y < cols and \
+            0 <= target_x < rows and 0 <= target_y < cols:
+                if board[adjacent_x][adjacent_y] == 3 and board[target_x][target_y] == 2:
+                    nextPositions.append([target_x, target_y])
 
         print(f'Next positions: {nextPositions}')
-        return forward_moves if forward_moves else backward_moves
+        return nextPositions
 
-    
     def getPotentialBlockersPlacements(self):
         freePlaces = set()
         for i, list in enumerate(self.board):
