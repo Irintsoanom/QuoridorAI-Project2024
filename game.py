@@ -106,27 +106,18 @@ class Game:
 
         return nextPositions
 
-    def getPotentialBlockersPlacements(self):
+    def getPotentialBlockersPlacements(self, itemNumber):
         freePlaces = []
         for i, row in enumerate(self.board):
             for j, item in enumerate(row):
-                if item == 3:  
+                if item == itemNumber:  
                     freePlaces.append((i, j))
         return freePlaces
     
-    def pawnPlaces(self):
-        freePlacesForPawn = []
-        for i, row in enumerate(self.board):
-            for j, item in enumerate(row):
-                if item == 2:  
-                    freePlacesForPawn.append((i, j))
-        return freePlacesForPawn
-
-
     def blockersPlacements(self):
         placement = []
-        freePlaces = self.getPotentialBlockersPlacements()
-        pawnPlaces = self.pawnPlaces()
+        freePlaces = self.getPotentialBlockersPlacements(3)
+        pawnPlaces = self.getPotentialBlockersPlacements(2)
 
         print(f'All available : {freePlaces}')
         for elem in freePlaces:
