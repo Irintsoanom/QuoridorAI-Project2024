@@ -102,27 +102,25 @@ class Game:
         return nextPosition
     
     def getPotentialBlockersPlacements(self):
-        freePlaces = []
+        freePlaces = set()
         for i, list in enumerate(self.board):
             for j, item in enumerate(list):
                 if item == 3:
-                    freePlaces.append((i, j))
+                    freePlaces.add((i, j))
         return freePlaces
     
     def blockersPlacements(self):
         placement = []
         freePlaces = self.getPotentialBlockersPlacements()
-        for elem in freePlaces:
-            x, y = elem[0], elem[1]
-            try:
-                # Horizontal
-                if ((x, y+2) in freePlaces and (x-1, y+1) in freePlaces and (x+1, y+1) in freePlaces) or ((x, y+2) in freePlaces and (x+1, y+1) in freePlaces and (x-1, y+1) not in freePlaces and (x-3, y+1) not in freePlaces) or ((x, y+2) in freePlaces and (x-1, y+1) in freePlaces and (x+1, y+1) not in freePlaces and (x+3, y+1) not in freePlaces) or ((x, y+2) in freePlaces and (x-1, y+1) not in freePlaces and (x-3, y+1) not in freePlaces and (x+1, y+1) not in freePlaces and (x+3, y+1) not in freePlaces):
-                    placement.append([[x, y], [x, y+2]])
-                # Vertical 
-                if ((x+2, y) in freePlaces and (x+1, y+1) in freePlaces and (x+1, y-1) in freePlaces) or ((x+2, y) in freePlaces and (x+1, y-1) in freePlaces and (x+1, y+1) not in freePlaces and (x+1, y+3) not in freePlaces) or ((x+2, y) in freePlaces and (x+1,y+1) in freePlaces and (x+1, y-1) not in freePlaces and (x+1, y-3) not in freePlaces) or ((x+2, y) in freePlaces and (x+1, y+1) not in freePlaces and (x+1, y+3) not in freePlaces and (x+1, y-1) not in freePlaces and (x+1, y-3) not in freePlaces):
-                    placement.append([[x,y], [x+2, y]]) 
-            except:
-                None
+        placement = []
+        freePlaces = self.getPotentialBlockersPlacements()
+        for x, y in freePlaces:
+            # Horizontal check
+            if all([(x, y + offset) in freePlaces for offset in [1, 2]]):
+                placement.append([[x, y], [x, y + 2]])
+            # Vertical check
+            if all([(x + offset, y) in freePlaces for offset in [1, 2]]):
+                placement.append([[x, y], [x + 2, y]])
         return placement
     
     def simulateMove(self, move):
