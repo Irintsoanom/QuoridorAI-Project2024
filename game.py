@@ -38,17 +38,18 @@ class Game:
     def play(self):
         moveType = None
         jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum', 'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole']
-        bestValue, bestSequence = self.minimax(3, True)
+        bestValue, bestSequence = self.minimax(2, True)
 
         firstAction = bestSequence[0]
         actionType, position = firstAction[0], firstAction[1]
+        print(self.blockersPlacements())
 
         if actionType == 'move':
             print(f'pawn:  {position}')
             moveType = {"type": "pawn", "position": [position]}
         else:
             print(f'Block:  {position}')
-            moveType = {"type": "blocker", "position": [position]}
+            moveType = {"type": "blocker", "position": position}
 
         request = {
             "response": "move",
@@ -88,26 +89,27 @@ class Game:
 
 
     def getPotentialBlockersPlacements(self):
-        freePlaces = set()
-        for i, list in enumerate(self.board):
-            for j, item in enumerate(list):
-                if item == 3:
-                    freePlaces.add((i, j))
+        freePlaces = []
+        for i, row in enumerate(self.board):
+            for j, item in enumerate(row):
+                if item == 3:  
+                    freePlaces.append((i, j))
         return freePlaces
-    
+
     def blockersPlacements(self):
         placement = []
         freePlaces = self.getPotentialBlockersPlacements()
-        placement = []
-        freePlaces = self.getPotentialBlockersPlacements()
-        for x, y in freePlaces:
-            # Horizontal check
-            if all([(x, y + offset) in freePlaces for offset in [1, 2]]):
-                placement.append([[x, y], [x, y + 2]])
-            # Vertical check
-            if all([(x + offset, y) in freePlaces for offset in [1, 2]]):
-                placement.append([[x, y], [x + 2, y]])
+        try:
+            for elem in freePlaces:
+                x, y = elem[0], elem[1]
+                if ((x, y+2) in freePlaces and (x-1, y+1) in freePlaces and (x+1, y+1) in freePlaces) or ((x, y+2) in freePlaces and (x+1, y+1) in freePlaces and (x-1, y+1) not in freePlaces and (x-3, y+1) not in freePlaces) or ((x, y+2) in freePlaces and (x-1, y+1) in freePlaces and (x+1, y+1) not in freePlaces and (x+3, y+1) not in freePlaces) or ((x, y+2) in freePlaces and (x-1, y+1) not in freePlaces and (x-3, y+1) not in freePlaces and (x+1, y+1) not in freePlaces and (x+3, y+1 not in freePlaces)):
+                    placement.append([[x, y], [x, y+2]])
+                if ((x+2, y) in freePlaces and (x+1, y+1) in freePlaces and (x+1, y-1) in freePlaces) or ((x+2, y) in freePlaces and (x+1, y-1) in freePlaces and (x+1, y+1) not in freePlaces and (x+1, y+3) not in freePlaces) or ((x+2, y) in freePlaces and (x+1,y+1) in freePlaces and (x+1, y-1) not in freePlaces and (x+1, y-3) not in freePlaces) or ((x+2, y) in freePlaces and (x+1, y+1) not in freePlaces and (x+1, y+3) not in freePlaces and (x+1, y-1) not in freePlaces and (x+1, y-3) not in freePlaces):
+                    placement.append([[x,y], [x+2, y]]) 
+        except:
+                None
         return placement
+
     
     def simulateMove(self,mockBoard, move):
         playerPosition = self.getPlayerPosition(PlayerType.CURRENT, mockBoard)
@@ -118,10 +120,12 @@ class Game:
         return self.evaluate(mockBoard)
     
     def simulateBlocking(self,mockBoard, position):
-        newX = position[0]
-        newY = position[1]
-        mockBoard[newX][newY] = 4
-        return self.evaluate(mockBoard)
+        print(f'Blockers : {position}')
+        for elem in position:
+            newX = elem[0]
+            newY = elem[1]
+            mockBoard[newX][newY] = 4
+            return self.evaluate(mockBoard)
 
         
     def positionFeature(self, mockBoard):
