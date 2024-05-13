@@ -42,8 +42,10 @@ class Game:
         potential_moves = self.getNextPotentialPositions()
         potential_blocks = self.blockersPlacements() if self.blockers[self.current] > 0 else []
 
+        availablePlaces = self.getPotentialBlockersPlacements()
+        
         print("Potential moves:", potential_moves)
-        print("Potential blocks:", potential_blocks)
+        # print("Potential blocks:", potential_blocks)
 
         if not potential_moves and not potential_blocks:
             return json.dumps({"response": "pass", "message": "No moves available."})
@@ -108,34 +110,33 @@ class Game:
         freePlaces = []
         for i, row in enumerate(self.board):
             for j, item in enumerate(row):
-                if item == 3:  # Assuming 3 denotes a valid place for a blocker
+                if item == 3:  
                     freePlaces.append((i, j))
-        print("Free places for blockers:", freePlaces)
         return freePlaces
-
-    def isHorizontalBlockPossible(self, x, y, freePlaces):
-        return (x, y+1) in freePlaces
-
-    def isVerticalBlockPossible(self, x, y, freePlaces):
-        return (x+1, y) in freePlaces
+    
+    def pawnPlaces(self):
+        freePlacesForPawn = []
+        for i, row in enumerate(self.board):
+            for j, item in enumerate(row):
+                if item == 2:  
+                    freePlacesForPawn.append((i, j))
+        return freePlacesForPawn
 
 
     def blockersPlacements(self):
         placement = []
         freePlaces = self.getPotentialBlockersPlacements()
-        rows, cols = len(self.board), len(self.board[0])
+        pawnPlaces = self.pawnPlaces()
 
-        print(f"Free places: {sorted(freePlaces)}")
-
+        print(f'All available : {freePlaces}')
         for elem in freePlaces:
             x, y = elem[0], elem[1]
-            if self.isHorizontalBlockPossible(x, y, freePlaces):
-                placement.append([(x, y), (x, y + 1)])
-                print(f"Horizontal placement added: {(x, y)} to {(x, y + 1)}")
-            if self.isVerticalBlockPossible(x, y, freePlaces):
-                placement.append([(x, y), (x + 1, y)])
-                print(f"Vertical placement added: {(x, y)} to {(x + 1, y)}")
-
+            if (x,y + 2) in freePlaces and (x, y+1) not in pawnPlaces:
+                    placement.append([(x, y), (x, y + 2)])
+                    print(f"Horizontal placement added: {(x, y)} to {(x, y + 2)}")
+            if (x + 2, y) in freePlaces and (x+1, y) not in pawnPlaces:
+                    placement.append([(x, y), (x + 2, y)])
+                    print(f"Vertical placement added: {(x, y)} to {(x + 1, y)}")
         print(f"Computed placements: {placement}")
         return placement
 
