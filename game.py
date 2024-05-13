@@ -132,20 +132,18 @@ class Game:
         freePlaces = self.getPotentialBlockersPlacements()
         rows, cols = len(self.board), len(self.board[0])
 
-        print(f"Free places: {sorted(freePlaces)}")  # Sorted for easier reading
+        print(f"Free places: {sorted(freePlaces)}")
 
         for x, y in sorted(freePlaces):
             # Horizontal check
             if y + 2 < cols:
-                horizontal_check = all(self.board[x][y + offset] == 3 for offset in range(2))
-                if horizontal_check:
+                if self.isHorizontalBlockPossible(x, y, freePlaces):
                     placement.append([(x, y), (x, y + 2)])
                     print(f"Horizontal placement added: {(x, y)} to {(x, y + 2)}")
 
             # Vertical check
             if x + 2 < rows:
-                vertical_check = all(self.board[x + offset][y] == 3 for offset in range(2))
-                if vertical_check:
+                if self.isVerticalBlockPossible(x, y, freePlaces):
                     placement.append([(x, y), (x + 2, y)])
                     print(f"Vertical placement added: {(x, y)} to {(x + 2, y)}")
 
