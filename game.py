@@ -127,18 +127,14 @@ class Game:
 
         print(f"Free places: {sorted(freePlaces)}")
 
-        for x, y in sorted(freePlaces):
-            # Check horizontal direct adjacency
-            if y + 1 < cols:
-                if self.isHorizontalBlockPossible(x, y, freePlaces):
-                    placement.append([(x, y), (x, y + 1)])
-                    print(f"Horizontal placement added: {(x, y)} to {(x, y + 1)}")
-
-            # Check vertical direct adjacency
-            if x + 1 < rows:
-                if self.isVerticalBlockPossible(x, y, freePlaces):
-                    placement.append([(x, y), (x + 1, y)])
-                    print(f"Vertical placement added: {(x, y)} to {(x + 1, y)}")
+        for elem in freePlaces:
+            x, y = elem[0], elem[1]
+            if self.isHorizontalBlockPossible(x, y, freePlaces):
+                placement.append([(x, y), (x, y + 1)])
+                print(f"Horizontal placement added: {(x, y)} to {(x, y + 1)}")
+            if self.isVerticalBlockPossible(x, y, freePlaces):
+                placement.append([(x, y), (x + 1, y)])
+                print(f"Vertical placement added: {(x, y)} to {(x + 1, y)}")
 
         print(f"Computed placements: {placement}")
         return placement
