@@ -166,12 +166,20 @@ class Game:
         yPos = playerPosition[1]
         yLeft = yPos
         yRight = yPos
+
         try:
-            if mockBoard[xPos + 1] == 4 and 0 < yLeft < 17 and 0 < yRight < 17:
-                yLeft -= 1
-                yRight += 1
-            xPos += 1
-            yOptimum = min(yLeft, yRight)
+            while True:
+                if 0 < yLeft and mockBoard[xPos + 1][yLeft] == 4:
+                    yLeft -= 1
+                elif  yRight and mockBoard[xPos + 1][yRight] == 4:
+                    yLeft += 1
+                else:
+                    break
+
+            if abs(yLeft - yPos) <= abs(yRight - yPos):
+                yOptimum = yLeft
+            else:
+                yOptimum = yRight
             return yOptimum - yPos
         except IndexError:
             return 0
