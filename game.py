@@ -38,7 +38,7 @@ class Game:
     def play(self):
         moveType = None
         jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum', 'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole']
-        bestValue, bestSequence = self.minimax(2, True)
+        bestValue, bestSequence = self.minimax(1, True)
 
         firstAction = bestSequence[0]
         actionType, position = firstAction[0], firstAction[1]
@@ -58,43 +58,26 @@ class Game:
 
     def getNextPotentialPositions(self):
         self.playerPosition = self.getPlayerPosition(PlayerType.CURRENT, self.board)
-        xPos, yPos = self.playerPosition[0], self.playerPosition[1]
-        nextPosition = []
+        if not self.playerPosition:
+            print("Player position not found.")
+            return []
+
+        xPos, yPos = self.playerPosition
+        nextPositions = []
         board = self.board
         rows, cols = len(board), len(board[0])
 
-        def isMovePossible(x, y, stepX, stepY, conditionVal):
-            newX, newY = x + stepX, y + stepY
-            if 0 <= newX < rows and 0 <= newY < cols and board[newX][newY] == conditionVal:
-                return True
-            return False
-        
-        if self.current == 1:
-            if isMovePossible(xPos, yPos, -1, 0, 3):
-                nextPosition.append([xPos - 2, yPos])
-            if isMovePossible(xPos, yPos, 1, 0, 3):
-                nextPosition.append([xPos + 2, yPos])
-            if isMovePossible(xPos, yPos, 2, 0, 0):
-                nextPosition.append([xPos + 4, yPos])
-            if isMovePossible(xPos, yPos, 0, -1, 3):
-                nextPosition.append([xPos, yPos - 2])
-            if isMovePossible(xPos, yPos, 0, 1, 3):
-                nextPosition.append([xPos, yPos + 2])
+        moves = [(-1, 0), (1, 0), (-2, 0), (0, -1), (0, 1)]
+        for dx, dy in moves:
+            newX, newY = xPos + dx, yPos + dy
+            if 0 <= newX < rows and 0 <= newY < cols:
+                if board[newX][newY] == 3 or (dx == -2 and board[newX][newY] == 1):
+                    nextPositions.append([newX, newY])
+                elif dx == 2 and newY == 0 and board[newX][newY] == 3:  # Specific condition
+                    nextPositions.append([newX, newY])
 
-        elif self.current == 0:
-            if isMovePossible(xPos, yPos, 1, 0, 3):
-                nextPosition.append([xPos + 2, yPos])
-            if isMovePossible(xPos, yPos, -1, 0, 3):
-                nextPosition.append([xPos - 2, yPos])
-            if isMovePossible(xPos, yPos, -2, 0, 1):
-                nextPosition.append([xPos - 4, yPos])
-            if isMovePossible(xPos, yPos, 0, -1, 3):
-                nextPosition.append([xPos, yPos - 2])
-            if isMovePossible(xPos, yPos, 0, 1, 3):
-                nextPosition.append([xPos, yPos + 2])
-
-        print(f'here : {nextPosition}')
-        return nextPosition
+        print(f'Next positions: {nextPositions}')
+        return nextPositions
     
     def getPotentialBlockersPlacements(self):
         freePlaces = set()
@@ -180,18 +163,61 @@ class Game:
         moveToNext = self.movesToNextColumn(mockBoard)
         return positionFeature + positionDiff + moveToNext
     
-    def minimax(self, depth, maximizingPlayer, alpha = float('-inf'), beta = float('inf')):
+    # def minimax(self, depth, maximizingPlayer, alpha = float('-inf'), beta = float('inf')):
+    #     if depth == 0:
+    #         return self.evaluate(self.board), []
+        
+    #     bestValue = -math.inf if maximizingPlayer else math.inf
+    #     bestSequence = []
+
+    #     potentialMoves = self.getNextPotentialPositions()
+    #     potentialBlocks = self.getPotentialBlockersPlacements() if self.blockers[self.current] > 0 else []
+
+
+    #     actions = [('move', move) for move in potentialMoves] + [('block', block) for block in potentialBlocks]
+
+    #     for actionType, action in actions:
+    #         newBoard = copy.deepcopy(self.board)
+    #         if actionType == 'move':
+    #             self.simulateMove(newBoard, action)
+    #         else:
+    #             self.simulateBlocking(newBoard, action)
+
+    #         eval, sequence = self.minimax(depth-1, not maximizingPlayer, alpha, beta)
+
+    #         if maximizingPlayer:
+    #             if eval > bestValue:
+    #                 bestValue = eval
+    #                 bestSequence = [action] + sequence
+    #             alpha = max(alpha, eval)
+    #         else:
+    #             if eval < bestValue:
+    #                 bestValue = eval
+    #                 bestSequence = [action] + sequence
+    #             beta = min(beta, eval)
+
+    #         if beta <= alpha:
+    #             break
+    #     return bestValue, bestSequence
+
+    def all_actions(self):
+        move_actions = [('move', move) for move in self.getNextPotentialPositions()]
+        
+        blocker_actions = []
+        if self.blockers[self.current] > 0:  
+            blocker_actions = [('block', block) for block in self.blockersPlacements()]
+        
+        return move_actions + blocker_actions
+
+
+    def minimax(self, depth, maximizingPlayer, alpha=float('-inf'), beta=float('inf')):
         if depth == 0:
             return self.evaluate(self.board), []
-        
-        bestValue = -math.inf if maximizingPlayer else math.inf
+
+        bestValue = float('-inf') if maximizingPlayer else float('inf')
         bestSequence = []
 
-        potentialMoves = self.getNextPotentialPositions()
-        potentialBlocks = self.getPotentialBlockersPlacements() if self.blockers[self.current] > 0 else []
-
-
-        actions = [('move', move) for move in potentialMoves] + [('block', block) for block in potentialBlocks]
+        actions = self.all_actions()  # Get all actions from the new method
 
         for actionType, action in actions:
             newBoard = copy.deepcopy(self.board)
@@ -200,22 +226,25 @@ class Game:
             else:
                 self.simulateBlocking(newBoard, action)
 
-            eval, sequence = self.minimax(depth-1, not maximizingPlayer, alpha, beta)
+            eval, sequence = self.minimax(depth - 1, not maximizingPlayer, alpha, beta)
 
             if maximizingPlayer:
                 if eval > bestValue:
                     bestValue = eval
-                    bestSequence = [action] + sequence
+                    bestSequence = [(actionType, action)] + sequence
                 alpha = max(alpha, eval)
             else:
                 if eval < bestValue:
                     bestValue = eval
-                    bestSequence = [action] + sequence
+                    bestSequence = [(actionType, action)] + sequence
                 beta = min(beta, eval)
 
             if beta <= alpha:
-                break
+                break  # Alpha-beta pruning
+
         return bestValue, bestSequence
+
+
     
     
     
