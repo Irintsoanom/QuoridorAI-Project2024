@@ -2,6 +2,7 @@ from enum import Enum
 import math
 import copy
 import json
+import random
 
 class PlayerType(Enum):
     ENEMY = 'ENEMY'
@@ -37,29 +38,23 @@ class Game:
     def play(self):
         moveType = None
         jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum', 'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole']
-        move = self.bestMove()
-        block = self.bestBlockerPosition()
-        print('here')
-        print(move)
-        print(block)
-        best = max(move[1], block[1])
-        if best in move:
-            moveType = {
-                "type" : "pawn",
-                "position": [move[0]]
-            }
-        elif best in block:
-            moveType = {
-                "type" : "blocker",
-                "position": block[0]
-            }
+        bestValue, bestSequence = self.minimax(2, True)
+
+        firstAction = bestSequence[0]
+        actionType, position = firstAction[0], firstAction[1]
+
+        if actionType == 'move':
+            moveType = {"type": "pawn", "position": position}
+        else:
+            moveType = {"type": "blocker", "position": position}
+
         request = {
-                "response": "move",
-                "move": moveType,
-                "message": "Fun message"
-                }
-        message = json.dumps(request)
-        return message
+            "response": "move",
+            "move": moveType,
+            "message": random.choice(jokeList)
+        }
+
+        return json.dumps(request)
 
     def getNextPotentialPositions(self):
         self.playerPosition = self.getPlayerPosition(PlayerType.CURRENT, self.board)
