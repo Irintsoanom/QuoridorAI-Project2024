@@ -119,10 +119,10 @@ class Game:
         check4 = (x+1, y-3) not in freePlaces
 
         if isVerticalPossible:
-            condition1 = check1 and check2  # Both (x+1, y+1) and (x+1, y-1) must be in freePlaces
-            condition2 = (check2 and not check1 and check3)  # (x+1, y-1) in and (x+1, y+1) not in freePlaces, and (x+1, y+3) not in freePlaces
-            condition3 = (check1 and not check2 and check4)  # (x+1, y+1) in and (x+1, y-1) not in freePlaces, and (x+1, y-3) not in freePlaces
-            condition4 = not check1 and check3 and not check2 and check4  # Neither (x+1, y+1) nor (x+1, y-1) in freePlaces, and both (x+1, y+3) and (x+1, y-3) not in freePlaces
+            condition1 = check1 and check2
+            condition2 = (check2 and not check1 and check3)
+            condition3 = (check1 and not check2 and check4)
+            condition4 = not check1 and check3 and not check2 and check4
 
             return condition1 or condition2 or condition3 or condition4
         return False
