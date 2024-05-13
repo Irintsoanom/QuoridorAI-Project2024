@@ -123,8 +123,7 @@ class Game:
                 placement.append([[x, y], [x + 2, y]])
         return placement
     
-    def simulateMove(self, move):
-        mockBoard = copy.deepcopy(self.board)
+    def simulateMove(self,mockBoard, move):
         playerPosition = self.getPlayerPosition(PlayerType.CURRENT, mockBoard)
         x, y = playerPosition[0], playerPosition[1]
         newX, newY = move[0], move[1]
@@ -132,8 +131,7 @@ class Game:
         mockBoard[newX][newY] = self.current
         return self.evaluate(mockBoard)
     
-    def simulateBlocking(self, position):
-        mockBoard = copy.deepcopy(self.board)
+    def simulateBlocking(self,mockBoard, position):
         for elem in position:
             newX = elem[0]
             newY = elem[1]
@@ -188,52 +186,43 @@ class Game:
         moveToNext = self.movesToNextColumn(mockBoard)
         return positionFeature + positionDiff + moveToNext
     
-    def bestMove(self):
-        bestScore = -math.inf
-        bestMove = None
-        print('best positions')
-        print(self.getNextPotentialPositions())
-        for position in self.getNextPotentialPositions():
-            print('position')
-            print(position)
-            score = self.simulateMove(position)
-            if score > bestScore:
-                bestMove = position
-                bestScore = score
-                return [bestMove, bestScore]
-
-    def bestBlockerPosition(self):
-        bestScore = -math.inf
-        bestBlockersPlacement = None
-        myBlockers = self.blockers[self.current]
-        if myBlockers > 0:
-            for emptyPlaces in self.blockersPlacements():
-                score = self.simulateBlocking(emptyPlaces)
-                if score > bestScore:
-                    bestBlockersPlacement = emptyPlaces
-                    bestScore = score
-                    return [bestBlockersPlacement, bestScore]
-        else:
-            return [None, -math.inf]
-            
-    
-    # def minimax(self, board, depth, maximizingPlayer):
-    #     if depth == 0:
-    #         return self.evaluate(board)
+    def minimax(self, depth, maximizingPlayer, alpha = float('-inf'), beta = float('inf')):
+        if depth == 0:
+            return self.evaluate(self.board), []
         
-    #     if maximizingPlayer:
-    #         maxEval = -math.inf
-    #         for position in self.getNextPotentialPositions():
-    #             newBoard = self.simulateMove(position)
-    #             eval = self.minimax(newBoard, depth - 1, False)
-    #             maxEval = max(maxEval, eval)
-    #         return maxEval
-    #     else:
-    #         minEval = math.inf
-    #         for position in self.getNextPotentialPositions():
-    #             newBoard = self.simulateMove(position)
-    #             eval = self.minimax(newBoard, depth - 1, True)
-    #             minEval = min(minEval, eval)
-    #         return minEval
+        bestValue = -math.inf if maximizingPlayer else math.inf
+        bestSequence = []
+
+        potentialMoves = self.getNextPotentialPositions()
+        potentialBlocks = self.getPotentialBlockersPlacements() if self.blockers[self.current] > 0 else []
+
+
+        actions = [('move', move) for move in potentialMoves] + [('block', block) for block in potentialBlocks]
+
+        for actionType, action in actions:
+            newBoard = copy.deepcopy(self.board)
+            if actionType == 'move':
+                self.simulateMove(newBoard, action)
+            else:
+                self.simulateBlocking(newBoard, action)
+
+            eval, sequence = self.minimax(depth-1, not maximizingPlayer, alpha, beta)
+
+            if maximizingPlayer:
+                if eval > bestValue:
+                    bestValue = eval
+                    bestSequence = [action] + sequence
+                alpha = max(alpha, eval)
+            else:
+                if eval < bestValue:
+                    bestValue = eval
+                    bestSequence = [action] + sequence
+                beta = min(beta, eval)
+
+            if beta <= alpha:
+                break
+        return bestValue, bestSequence
+    
+    
     
     
