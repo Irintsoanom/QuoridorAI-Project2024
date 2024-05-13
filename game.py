@@ -37,29 +37,33 @@ class Game:
         return (None, None)
     
     def play(self):
-        moveType = None
         jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum',
-                    'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole']
+                    'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m envole']
         
+        
+        print(f"Move count: {self.moveCount}, Current Player: {self.current}")
+
         if self.moveCount % 5 == 0 and self.moveCount > 0:
             potentialBlocks = self.blockersPlacements()
             if potentialBlocks and self.blockers[self.current] > 0:
                 chosenBlock = random.choice(potentialBlocks)
+                print(f"Attempting to place a blocker at: {chosenBlock}")
                 moveType = {"type": "blocker", "position": chosenBlock}
-                print(f"Random Block: {chosenBlock}")
+                self.moveCount += 1
+                print("Blocker placed.")
             else:
-                print("No valid blocker placements available.")
+                print("No valid blocker placements available or no blockers left.")
         else:
             bestValue, bestSequence = self.minimax(2, True)
-            if not bestSequence:
-                print("No valid moves available.")
-                return json.dumps({"response": "pass"}) 
-            firstAction = bestSequence[0]
-            xPos, yPos = firstAction
-            moveType = {"type": "pawn", "position": [[xPos, yPos]]}
-            print(f"Pawn move: {firstAction}")
+            if bestSequence:
+                firstAction = bestSequence[0]
+                moveType = {"type": "pawn", "position": [firstAction]}
+                print(f"Pawn move: {firstAction}")
+            else:
+                print("No valid pawn moves available.")
+                return json.dumps({"response": "pass"})
 
-        self.moveCount += 1  
+        self.moveCount += 1
 
         request = {
             "response": "move",
@@ -67,7 +71,9 @@ class Game:
             "message": random.choice(jokeList)
         }
 
+        print("Sending move to server...")
         return json.dumps(request)
+
 
 
     def getNextPotentialPositions(self):
