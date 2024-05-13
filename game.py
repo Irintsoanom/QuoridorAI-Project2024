@@ -93,7 +93,7 @@ class Game:
             if isMovePossible(xPos, yPos, 0, 1, 3):
                 nextPosition.append([xPos, yPos + 2])
 
-        print(nextPosition)
+        print(f'here : {nextPosition}')
         return nextPosition
     
     def getPotentialBlockersPlacements(self):
@@ -127,10 +127,9 @@ class Game:
         return self.evaluate(mockBoard)
     
     def simulateBlocking(self,mockBoard, position):
-        for elem in position:
-            newX = elem[0]
-            newY = elem[1]
-            mockBoard[newX][newY] = 4
+        newX = position[0]
+        newY = position[1]
+        mockBoard[newX][newY] = 4
         return self.evaluate(mockBoard)
 
         
