@@ -36,28 +36,45 @@ class Game:
         return (None, None)
     
     def play(self):
-        moveType = None
-        jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum', 'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole']
-        bestValue, bestSequence = self.minimax(2, True)
+        jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum', 'Wesh alors', 
+                    'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole']
+        
+        potential_moves = self.getNextPotentialPositions()
+        potential_blocks = self.blockersPlacements() if self.blockers[self.current] > 0 else []
 
-        firstAction = bestSequence[0]
-        actionType, position = firstAction[0], firstAction[1]
-        print(f'Blockers : {self.blockersPlacements()}')
+        print("Potential moves:", potential_moves)
+        print("Potential blocks:", potential_blocks)
 
-        if actionType == 'move':
-            print(f'pawn:  {position}')
+        if not potential_moves and not potential_blocks:
+            return json.dumps({"response": "pass", "message": "No moves available."})
+
+        actions = []
+        if potential_moves:
+            actions.append(("move", random.choice(potential_moves)))
+        if potential_blocks:
+            actions.append(("block", random.choice(potential_blocks)))
+
+        action_type, position = random.choice(actions) if actions else (None, None)
+
+        if action_type == 'move':
             moveType = {"type": "pawn", "position": [position]}
-        else:
-            print(f'Block:  {position}')
+            print(f'Moving to: {position}')
+        elif action_type == 'block':
             moveType = {"type": "blocker", "position": position}
+            print(f'Placing blocker at: {position}')
+        else:
+            return json.dumps({"response": "pass", "message": "No moves available."})
 
+        message = random.choice(jokeList)
         request = {
             "response": "move",
             "move": moveType,
-            "message": random.choice(jokeList)
+            "message": message
         }
 
         return json.dumps(request)
+
+
 
     def getNextPotentialPositions(self):
         self.playerPosition = self.getPlayerPosition(PlayerType.CURRENT, self.board)
@@ -72,8 +89,8 @@ class Game:
 
         directions = [
             (1, 0) if self.current == 0 else (-1, 0),
-            (0, 1),  
-            (0, -1)  
+            (0, 1),  # Right
+            (0, -1)  # Left
         ]
 
         for dx, dy in directions:
@@ -87,15 +104,15 @@ class Game:
 
         return nextPositions
 
-
     def getPotentialBlockersPlacements(self):
-        freePlaces = set()
+        freePlaces = []
         for i, row in enumerate(self.board):
             for j, item in enumerate(row):
-                if item == 3:  
-                    freePlaces.add((i, j))
+                if item == 3:  # Assuming 3 denotes a valid place for a blocker
+                    freePlaces.append((i, j))
+        print("Free places for blockers:", freePlaces)
         return freePlaces
-    
+
     def isHorizontalBlockPossible(self, x, y, freePlaces):
         isHorizontalPossible = (x, y+2) in freePlaces
         check1 = (x-1, y+1) in freePlaces
@@ -119,9 +136,9 @@ class Game:
         check4 = (x+1, y-3) not in freePlaces
 
         if isVerticalPossible:
-            condition1 = check1 and check2
-            condition2 = (check2 and not check1 and check3)
-            condition3 = (check1 and not check2 and check4)
+            condition1 = check1 and check2 
+            condition2 = (check2 and not check1 and check3)  
+            condition3 = (check1 and not check2 and check4)  
             condition4 = not check1 and check3 and not check2 and check4
 
             return condition1 or condition2 or condition3 or condition4
@@ -136,13 +153,13 @@ class Game:
 
         for x, y in sorted(freePlaces):
             # Horizontal check
-            if y + 2 < cols:
+            if y + 2 < cols  and (x, y+1) in freePlaces:
                 if self.isHorizontalBlockPossible(x, y, freePlaces):
                     placement.append([(x, y), (x, y + 2)])
                     print(f"Horizontal placement added: {(x, y)} to {(x, y + 2)}")
 
             # Vertical check
-            if x + 2 < rows:
+            if x + 2 < rows  and (x+1, y) in freePlaces:
                 if self.isVerticalBlockPossible(x, y, freePlaces):
                     placement.append([(x, y), (x + 2, y)])
                     print(f"Vertical placement added: {(x, y)} to {(x + 2, y)}")
@@ -150,6 +167,8 @@ class Game:
         print(f"Computed placements: {placement}")
         return placement
 
+
+    
     def simulateMove(self,mockBoard, move):
         playerPosition = self.getPlayerPosition(PlayerType.CURRENT, mockBoard)
         x, y = playerPosition[0], playerPosition[1]
@@ -159,12 +178,10 @@ class Game:
         return self.evaluate(mockBoard)
     
     def simulateBlocking(self,mockBoard, position):
-        print(f'Blockers : {position}')
-        for elem in position:
-            newX = elem[0]
-            newY = elem[1]
-            mockBoard[newX][newY] = 4
-            return self.evaluate(mockBoard)
+        newX = position[0]
+        newY = position[1]
+        mockBoard[newX][newY] = 4
+        return self.evaluate(mockBoard)
 
         
     def positionFeature(self, mockBoard):
