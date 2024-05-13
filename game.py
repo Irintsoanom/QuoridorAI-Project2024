@@ -114,35 +114,27 @@ class Game:
         return freePlaces
 
     def isHorizontalBlockPossible(self, x, y, freePlaces):
-        isHorizontalPossible = (x, y+2) in freePlaces
+        # Adjusted to check direct adjacency
+        isHorizontalPossible = (x, y+1) in freePlaces
         check1 = (x-1, y+1) in freePlaces
         check2 = (x+1, y+1) in freePlaces
-        check3 = (x-3, y+1) not in freePlaces
-        check4 = (x+3, y+1) not in freePlaces
 
         if isHorizontalPossible:
             condition1 = check1 and check2
-            condition2 = (check2 and check3) or (check1 and check4) 
-            condition3 = not check1 and check3 and not check2 and check4
-
-            return condition1 or condition2 or condition3
+            return condition1
         return False
-    
+
     def isVerticalBlockPossible(self, x, y, freePlaces):
-        isVerticalPossible = (x+2, y) in freePlaces
+        # Adjusted to check direct adjacency
+        isVerticalPossible = (x+1, y) in freePlaces
         check1 = (x+1, y+1) in freePlaces
         check2 = (x+1, y-1) in freePlaces
-        check3 = (x+1, y+3) not in freePlaces
-        check4 = (x+1, y-3) not in freePlaces
 
         if isVerticalPossible:
-            condition1 = check1 and check2 
-            condition2 = (check2 and not check1 and check3)  
-            condition3 = (check1 and not check2 and check4)  
-            condition4 = not check1 and check3 and not check2 and check4
-
-            return condition1 or condition2 or condition3 or condition4
+            condition1 = check1 and check2
+            return condition1
         return False
+
 
     def blockersPlacements(self):
         placement = []
@@ -152,23 +144,21 @@ class Game:
         print(f"Free places: {sorted(freePlaces)}")
 
         for x, y in sorted(freePlaces):
-            # Horizontal check
-            if y + 2 < cols  and (x, y+1) in freePlaces:
+            # Check horizontal direct adjacency
+            if y + 1 < cols:
                 if self.isHorizontalBlockPossible(x, y, freePlaces):
-                    placement.append([(x, y), (x, y + 2)])
-                    print(f"Horizontal placement added: {(x, y)} to {(x, y + 2)}")
+                    placement.append([(x, y), (x, y + 1)])
+                    print(f"Horizontal placement added: {(x, y)} to {(x, y + 1)}")
 
-            # Vertical check
-            if x + 2 < rows  and (x+1, y) in freePlaces:
+            # Check vertical direct adjacency
+            if x + 1 < rows:
                 if self.isVerticalBlockPossible(x, y, freePlaces):
-                    placement.append([(x, y), (x + 2, y)])
-                    print(f"Vertical placement added: {(x, y)} to {(x + 2, y)}")
+                    placement.append([(x, y), (x + 1, y)])
+                    print(f"Vertical placement added: {(x, y)} to {(x + 1, y)}")
 
         print(f"Computed placements: {placement}")
         return placement
 
-
-    
     def simulateMove(self,mockBoard, move):
         playerPosition = self.getPlayerPosition(PlayerType.CURRENT, mockBoard)
         x, y = playerPosition[0], playerPosition[1]
