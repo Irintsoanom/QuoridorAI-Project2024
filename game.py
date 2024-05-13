@@ -41,23 +41,12 @@ class Game:
         bestValue, bestSequence = self.minimax(2, True)
 
         firstAction = bestSequence[0]
-        actionType, position = firstAction[0], firstAction[1]
-        print(f'Blockers : {self.blockersPlacements()}')
+        xPos, yPos = firstAction
 
-        if actionType == 'move':
-            print(f'pawn:  {position}')
-            moveType = {"type": "pawn", "position": [position]}
-        else:
-            print(f'Block:  {position}')
-            moveType = {"type": "blocker", "position": position}
+        if self.blockers > 0:
+            pass
 
-        request = {
-            "response": "move",
-            "move": moveType,
-            "message": random.choice(jokeList)
-        }
-
-        return json.dumps(request)
+        return bestSequence
 
     def getNextPotentialPositions(self):
         self.playerPosition = self.getPlayerPosition(PlayerType.CURRENT, self.board)
@@ -127,7 +116,6 @@ class Game:
             newY = elem[1]
             mockBoard[newX][newY] = 4
             return self.evaluate(mockBoard)
-
         
     def positionFeature(self, mockBoard):
         playerPosition = self.getPlayerPosition(PlayerType.CURRENT, mockBoard)
@@ -181,51 +169,41 @@ class Game:
         positionDiff = self.positionDifference(mockBoard)
         moveToNext = self.movesToNextColumn(mockBoard)
         return positionFeature + positionDiff + moveToNext
-    
-
-    def all_actions(self):
-        move_actions = [('move', move) for move in self.getNextPotentialPositions()]
-        
-        blocker_actions = []
-        if self.blockers[self.current] > 0:  
-            blocker_actions = [('block', block) for block in self.blockersPlacements()]
-        
-        return move_actions + blocker_actions
-
 
     def minimax(self, depth, maximizingPlayer, alpha=float('-inf'), beta=float('inf')):
         if depth == 0:
             return self.evaluate(self.board), []
 
-        bestValue = float('-inf') if maximizingPlayer else float('inf')
-        bestSequence = []
-
-        actions = self.all_actions()  
-
-        for actionType, action in actions:
-            newBoard = copy.deepcopy(self.board)
-            if actionType == 'move':
-                self.simulateMove(newBoard, action)
-            else:
-                self.simulateBlocking(newBoard, action)
-
-            eval, sequence = self.minimax(depth - 1, not maximizingPlayer, alpha, beta)
-
-            if maximizingPlayer:
-                if eval > bestValue:
-                    bestValue = eval
-                    bestSequence = [(actionType, action)] + sequence
+        if maximizingPlayer:
+            maxEval = float('-inf')
+            best_sequence = []
+            for move in self.getNextPotentialPositions():
+                newBoard = copy.deepcopy(self.board)
+                eval = self.simulateMove(newBoard, move)  # Evaluate the move
+                _, sequence = self.minimax(depth - 1, False, alpha, beta)
+                if eval > maxEval:
+                    maxEval = eval
+                    best_sequence = [move] + sequence
                 alpha = max(alpha, eval)
-            else:
-                if eval < bestValue:
-                    bestValue = eval
-                    bestSequence = [(actionType, action)] + sequence
+                if alpha >= beta:
+                    break
+            return maxEval, best_sequence
+        else:
+            minEval = float('inf')
+            best_sequence = []
+            for move in self.getNextPotentialPositions():
+                newBoard = copy.deepcopy(self.board)
+                eval = self.simulateMove(newBoard, move)  # Evaluate the move
+                _, sequence = self.minimax(depth - 1, True, alpha, beta)
+                if eval < minEval:
+                    minEval = eval
+                    best_sequence = [move] + sequence
                 beta = min(beta, eval)
+                if alpha >= beta:
+                    break
+            return minEval, best_sequence
 
-            if beta <= alpha:
-                break  
 
-        return bestValue, bestSequence
 
 
     
