@@ -42,7 +42,7 @@ class Game:
 
         firstAction = bestSequence[0]
         actionType, position = firstAction[0], firstAction[1]
-        print(self.blockersPlacements())
+        print(f'Blockers : {self.blockersPlacements()}')
 
         if actionType == 'move':
             print(f'pawn:  {position}')
@@ -72,8 +72,8 @@ class Game:
 
         directions = [
             (1, 0) if self.current == 0 else (-1, 0),
-            (0, 1),  # Right
-            (0, -1)  # Left
+            (0, 1),  
+            (0, -1)  
         ]
 
         for dx, dy in directions:
@@ -89,28 +89,69 @@ class Game:
 
 
     def getPotentialBlockersPlacements(self):
-        freePlaces = []
+        freePlaces = set()
         for i, row in enumerate(self.board):
             for j, item in enumerate(row):
                 if item == 3:  
-                    freePlaces.append((i, j))
+                    freePlaces.add((i, j))
         return freePlaces
+    
+    def isHorizontalBlockPossible(self, x, y, freePlaces):
+        isHorizontalPossible = (x, y+2) in freePlaces
+        check1 = (x-1, y+1) in freePlaces
+        check2 = (x+1, y+1) in freePlaces
+        check3 = (x-3, y+1) not in freePlaces
+        check4 = (x+3, y+1) not in freePlaces
+
+        if isHorizontalPossible:
+            condition1 = check1 and check2
+            condition2 = (check2 and check3) or (check1 and check4) 
+            condition3 = not check1 and check3 and not check2 and check4
+
+            return condition1 or condition2 or condition3
+        return False
+    
+    def isVerticalBlockPossible(self, x, y, freePlaces):
+        isVerticalPossible = (x+2, y) in freePlaces
+        check1 = (x+1, y+1) in freePlaces
+        check2 = (x+1, y-1) in freePlaces
+        check3 = (x+1, y+3) not in freePlaces
+        check4 = (x+1, y-3) not in freePlaces
+
+        if isVerticalPossible:
+            condition1 = check1 and check2  # Both (x+1, y+1) and (x+1, y-1) must be in freePlaces
+            condition2 = (check2 and not check1 and check3)  # (x+1, y-1) in and (x+1, y+1) not in freePlaces, and (x+1, y+3) not in freePlaces
+            condition3 = (check1 and not check2 and check4)  # (x+1, y+1) in and (x+1, y-1) not in freePlaces, and (x+1, y-3) not in freePlaces
+            condition4 = not check1 and check3 and not check2 and check4  # Neither (x+1, y+1) nor (x+1, y-1) in freePlaces, and both (x+1, y+3) and (x+1, y-3) not in freePlaces
+
+            return condition1 or condition2 or condition3 or condition4
+        return False
 
     def blockersPlacements(self):
         placement = []
         freePlaces = self.getPotentialBlockersPlacements()
-        try:
-            for elem in freePlaces:
-                x, y = elem[0], elem[1]
-                if ((x, y+2) in freePlaces and (x-1, y+1) in freePlaces and (x+1, y+1) in freePlaces) or ((x, y+2) in freePlaces and (x+1, y+1) in freePlaces and (x-1, y+1) not in freePlaces and (x-3, y+1) not in freePlaces) or ((x, y+2) in freePlaces and (x-1, y+1) in freePlaces and (x+1, y+1) not in freePlaces and (x+3, y+1) not in freePlaces) or ((x, y+2) in freePlaces and (x-1, y+1) not in freePlaces and (x-3, y+1) not in freePlaces and (x+1, y+1) not in freePlaces and (x+3, y+1 not in freePlaces)):
-                    placement.append([[x, y], [x, y+2]])
-                if ((x+2, y) in freePlaces and (x+1, y+1) in freePlaces and (x+1, y-1) in freePlaces) or ((x+2, y) in freePlaces and (x+1, y-1) in freePlaces and (x+1, y+1) not in freePlaces and (x+1, y+3) not in freePlaces) or ((x+2, y) in freePlaces and (x+1,y+1) in freePlaces and (x+1, y-1) not in freePlaces and (x+1, y-3) not in freePlaces) or ((x+2, y) in freePlaces and (x+1, y+1) not in freePlaces and (x+1, y+3) not in freePlaces and (x+1, y-1) not in freePlaces and (x+1, y-3) not in freePlaces):
-                    placement.append([[x,y], [x+2, y]]) 
-        except:
-                None
+        rows, cols = len(self.board), len(self.board[0])
+
+        print(f"Free places: {sorted(freePlaces)}")  # Sorted for easier reading
+
+        for x, y in sorted(freePlaces):
+            # Horizontal check
+            if y + 2 < cols:
+                horizontal_check = all(self.board[x][y + offset] == 3 for offset in range(2))
+                if horizontal_check:
+                    placement.append([(x, y), (x, y + 2)])
+                    print(f"Horizontal placement added: {(x, y)} to {(x, y + 2)}")
+
+            # Vertical check
+            if x + 2 < rows:
+                vertical_check = all(self.board[x + offset][y] == 3 for offset in range(2))
+                if vertical_check:
+                    placement.append([(x, y), (x + 2, y)])
+                    print(f"Vertical placement added: {(x, y)} to {(x + 2, y)}")
+
+        print(f"Computed placements: {placement}")
         return placement
 
-    
     def simulateMove(self,mockBoard, move):
         playerPosition = self.getPlayerPosition(PlayerType.CURRENT, mockBoard)
         x, y = playerPosition[0], playerPosition[1]
