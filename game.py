@@ -17,6 +17,7 @@ class Game:
         self.enemy = 1
         self.blockers = [10, 10]
         self.playerPosition = ()
+        self.moveCount = 0
 
     def setState(self, message):
         state = message['state']
@@ -37,16 +38,38 @@ class Game:
     
     def play(self):
         moveType = None
-        jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum', 'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole']
-        bestValue, bestSequence = self.minimax(2, True)
+        jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum',
+                    'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole']
+        
+        if self.moveCount % 5 == 0 and self.moveCount > 0:
+            potentialBlocks = self.blockersPlacements()
+            if potentialBlocks and self.blockers[self.current] > 0:
+                chosenBlock = random.choice(potentialBlocks)
+                self.simulateBlocking(self.board, chosenBlock[0])
+                moveType = {"type": "blocker", "position": chosenBlock}
+                print(f"Random Block: {chosenBlock}")
+            else:
+                print("No valid blocker placements available.")
+        else:
+            bestValue, bestSequence = self.minimax(2, True)
+            if not bestSequence:
+                print("No valid moves available.")
+                return json.dumps({"response": "pass"}) 
+            firstAction = bestSequence[0]
+            xPos, yPos = firstAction
+            moveType = {"type": "pawn", "position": [xPos, yPos]}
+            print(f"Pawn move: {firstAction}")
 
-        firstAction = bestSequence[0]
-        xPos, yPos = firstAction
+        self.moveCount += 1  
 
-        if self.blockers > 0:
-            pass
+        request = {
+            "response": "move",
+            "move": moveType,
+            "message": random.choice(jokeList)
+        }
 
-        return bestSequence
+        return json.dumps(request)
+
 
     def getNextPotentialPositions(self):
         self.playerPosition = self.getPlayerPosition(PlayerType.CURRENT, self.board)
