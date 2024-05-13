@@ -87,66 +87,28 @@ class Game:
 
         return nextPositions
 
-
-    def getPotentialBlockersPlacements(self):
-        freePlaces = set()
+    def getPotentialBlockersPlacements(self, itemNumber):
+        freePlaces = []
         for i, row in enumerate(self.board):
             for j, item in enumerate(row):
-                if item == 3:  
-                    freePlaces.add((i, j))
+                if item == itemNumber:  
+                    freePlaces.append((i, j))
         return freePlaces
     
-    def isHorizontalBlockPossible(self, x, y, freePlaces):
-        isHorizontalPossible = (x, y+2) in freePlaces
-        check1 = (x-1, y+1) in freePlaces
-        check2 = (x+1, y+1) in freePlaces
-        check3 = (x-3, y+1) not in freePlaces
-        check4 = (x+3, y+1) not in freePlaces
-
-        if isHorizontalPossible:
-            condition1 = check1 and check2
-            condition2 = (check2 and check3) or (check1 and check4) 
-            condition3 = not check1 and check3 and not check2 and check4
-
-            return condition1 or condition2 or condition3
-        return False
-    
-    def isVerticalBlockPossible(self, x, y, freePlaces):
-        isVerticalPossible = (x+2, y) in freePlaces
-        check1 = (x+1, y+1) in freePlaces
-        check2 = (x+1, y-1) in freePlaces
-        check3 = (x+1, y+3) not in freePlaces
-        check4 = (x+1, y-3) not in freePlaces
-
-        if isVerticalPossible:
-            condition1 = check1 and check2
-            condition2 = (check2 and not check1 and check3)
-            condition3 = (check1 and not check2 and check4)
-            condition4 = not check1 and check3 and not check2 and check4
-
-            return condition1 or condition2 or condition3 or condition4
-        return False
-
     def blockersPlacements(self):
         placement = []
-        freePlaces = self.getPotentialBlockersPlacements()
-        rows, cols = len(self.board), len(self.board[0])
+        freePlaces = self.getPotentialBlockersPlacements(3)
+        pawnPlaces = self.getPotentialBlockersPlacements(2)
 
-        print(f"Free places: {sorted(freePlaces)}")
-
-        for x, y in sorted(freePlaces):
-            # Horizontal check
-            if y + 2 < cols:
-                if self.isHorizontalBlockPossible(x, y, freePlaces):
+        print(f'All available : {freePlaces}')
+        for elem in freePlaces:
+            x, y = elem[0], elem[1]
+            if (x,y + 2) in freePlaces and (x, y+1) not in pawnPlaces:
                     placement.append([(x, y), (x, y + 2)])
                     print(f"Horizontal placement added: {(x, y)} to {(x, y + 2)}")
-
-            # Vertical check
-            if x + 2 < rows:
-                if self.isVerticalBlockPossible(x, y, freePlaces):
+            if (x + 2, y) in freePlaces and (x+1, y) not in pawnPlaces:
                     placement.append([(x, y), (x + 2, y)])
-                    print(f"Vertical placement added: {(x, y)} to {(x + 2, y)}")
-
+                    print(f"Vertical placement added: {(x, y)} to {(x + 1, y)}")
         print(f"Computed placements: {placement}")
         return placement
 
