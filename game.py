@@ -50,8 +50,8 @@ class Game:
             }
         elif best in block:
             moveType = {
-                "type" : "pawn",
-                "position": [block[0]]
+                "type" : "blocker",
+                "position": block[0]
             }
         request = {
                 "response": "move",
@@ -114,11 +114,15 @@ class Game:
         freePlaces = self.getPotentialBlockersPlacements()
         for elem in freePlaces:
             x, y = elem[0], elem[1]
-            #Perpendiculaire non réglé A CORRIGER ABSOLUMENT
-            if (x, y+2) in freePlaces and (x-1, y+1) in freePlaces and (x+1, y+1) in freePlaces:
-                placement.append([[x, y], [x, y+2]])
-            if (x+2, y) in freePlaces and (x+1, y-1) in freePlaces and (x+1, y+1) in freePlaces:
-                placement.append([[x,y], [x+2, y]]) 
+            try:
+                # Horizontal
+                if ((x, y+2) in freePlaces and (x-1, y+1) in freePlaces and (x+1, y+1) in freePlaces) or ((x, y+2) in freePlaces and (x+1, y+1) in freePlaces and (x-1, y+1) not in freePlaces and (x-3, y+1) not in freePlaces) or ((x, y+2) in freePlaces and (x-1, y+1) in freePlaces and (x+1, y+1) not in freePlaces and (x+3, y+1) not in freePlaces) or ((x, y+2) in freePlaces and (x-1, y+1) not in freePlaces and (x-3, y+1) not in freePlaces and (x+1, y+1) not in freePlaces and (x+3, y+1 not in freePlaces)):
+                    placement.append([[x, y], [x, y+2]])
+                # Vertical 
+                if ((x+2, y) in freePlaces and (x+1, y+1) in freePlaces and (x+1, y-1) in freePlaces) or ((x+2, y) in freePlaces and (x+1, y-1) in freePlaces and (x+1, y+1) not in freePlaces and (x+1, y+3) not in freePlaces) or ((x+2, y) in freePlaces and (x+1,y+1) in freePlaces and (x+1, y-1) not in freePlaces and (x+1, y-3) not in freePlaces) or ((x+2, y) in freePlaces and (x+1, y+1) not in freePlaces and (x+1, y+3) not in freePlaces and (x+1, y-1) not in freePlaces and (x+1, y-3) not in freePlaces):
+                    placement.append([[x,y], [x+2, y]]) 
+            except:
+                None
         return placement
     
     def simulateMove(self, move):
@@ -127,9 +131,8 @@ class Game:
         x, y = playerPosition[0], playerPosition[1]
         newX, newY = move[0], move[1]
         mockBoard[x][y] = 2
-        print(f'{newX} et y : {newY}')
         mockBoard[newX][newY] = self.current
-        return self.evaluate(mockBoard)
+        return self.evaluate(mockBoard, 3, 4, 5)
     
     def simulateBlocking(self, position):
         mockBoard = copy.deepcopy(self.board)
@@ -137,7 +140,7 @@ class Game:
             newX = elem[0]
             newY = elem[1]
             mockBoard[newX][newY] = 4
-        return self.evaluate(mockBoard)
+        return self.evaluate(mockBoard, 2, 1, 1)
 
         
     def positionFeature(self, mockBoard):
@@ -151,9 +154,11 @@ class Game:
     def positionDifference(self, mockBoard):
         playerPosition = self.getPlayerPosition(PlayerType.CURRENT, mockBoard)
         enemyPosition = self.getPlayerPosition(PlayerType.ENEMY, mockBoard)
-        diff = abs(playerPosition[0] - enemyPosition[0])
-        print(f'player : {playerPosition}, Enemy : {enemyPosition}')
-        return diff
+        try:
+            diff = abs(playerPosition[0] - enemyPosition[0])
+            return diff
+        except:
+            return 0
     
     def movesToNextColumn(self, mockBoard):
         playerPosition = self.getPlayerPosition(PlayerType.CURRENT, mockBoard)
@@ -206,23 +211,23 @@ class Game:
             return [None, -math.inf]
             
     
-    def minimax(self, board, depth, maximizingPlayer):
-        if depth == 0:
-            return self.evaluate(board)
+    # def minimax(self, board, depth, maximizingPlayer):
+    #     if depth == 0:
+    #         return self.evaluate(board)
         
-        if maximizingPlayer:
-            maxEval = -math.inf
-            for position in self.getNextPotentialPositions():
-                newBoard = self.simulateMove(position)
-                eval = self.minimax(newBoard, depth - 1, False)
-                maxEval = max(maxEval, eval)
-            return maxEval
-        else:
-            minEval = math.inf
-            for position in self.getNextPotentialPositions():
-                newBoard = self.simulateMove(position)
-                eval = self.minimax(newBoard, depth - 1, True)
-                minEval = min(minEval, eval)
-            return minEval
+    #     if maximizingPlayer:
+    #         maxEval = -math.inf
+    #         for position in self.getNextPotentialPositions():
+    #             newBoard = self.simulateMove(position)
+    #             eval = self.minimax(newBoard, depth - 1, False)
+    #             maxEval = max(maxEval, eval)
+    #         return maxEval
+    #     else:
+    #         minEval = math.inf
+    #         for position in self.getNextPotentialPositions():
+    #             newBoard = self.simulateMove(position)
+    #             eval = self.minimax(newBoard, depth - 1, True)
+    #             minEval = min(minEval, eval)
+    #         return minEval
     
     
