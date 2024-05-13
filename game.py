@@ -116,7 +116,7 @@ class Game:
             x, y = elem[0], elem[1]
             try:
                 # Horizontal
-                if ((x, y+2) in freePlaces and (x-1, y+1) in freePlaces and (x+1, y+1) in freePlaces) or ((x, y+2) in freePlaces and (x+1, y+1) in freePlaces and (x-1, y+1) not in freePlaces and (x-3, y+1) not in freePlaces) or ((x, y+2) in freePlaces and (x-1, y+1) in freePlaces and (x+1, y+1) not in freePlaces and (x+3, y+1) not in freePlaces) or ((x, y+2) in freePlaces and (x-1, y+1) not in freePlaces and (x-3, y+1) not in freePlaces and (x+1, y+1) not in freePlaces and (x+3, y+1 not in freePlaces)):
+                if ((x, y+2) in freePlaces and (x-1, y+1) in freePlaces and (x+1, y+1) in freePlaces) or ((x, y+2) in freePlaces and (x+1, y+1) in freePlaces and (x-1, y+1) not in freePlaces and (x-3, y+1) not in freePlaces) or ((x, y+2) in freePlaces and (x-1, y+1) in freePlaces and (x+1, y+1) not in freePlaces and (x+3, y+1) not in freePlaces) or ((x, y+2) in freePlaces and (x-1, y+1) not in freePlaces and (x-3, y+1) not in freePlaces and (x+1, y+1) not in freePlaces and (x+3, y+1) not in freePlaces):
                     placement.append([[x, y], [x, y+2]])
                 # Vertical 
                 if ((x+2, y) in freePlaces and (x+1, y+1) in freePlaces and (x+1, y-1) in freePlaces) or ((x+2, y) in freePlaces and (x+1, y-1) in freePlaces and (x+1, y+1) not in freePlaces and (x+1, y+3) not in freePlaces) or ((x+2, y) in freePlaces and (x+1,y+1) in freePlaces and (x+1, y-1) not in freePlaces and (x+1, y-3) not in freePlaces) or ((x+2, y) in freePlaces and (x+1, y+1) not in freePlaces and (x+1, y+3) not in freePlaces and (x+1, y-1) not in freePlaces and (x+1, y-3) not in freePlaces):
@@ -132,7 +132,7 @@ class Game:
         newX, newY = move[0], move[1]
         mockBoard[x][y] = 2
         mockBoard[newX][newY] = self.current
-        return self.evaluate(mockBoard, 3, 4, 5)
+        return self.evaluate(mockBoard)
     
     def simulateBlocking(self, position):
         mockBoard = copy.deepcopy(self.board)
@@ -140,7 +140,7 @@ class Game:
             newX = elem[0]
             newY = elem[1]
             mockBoard[newX][newY] = 4
-        return self.evaluate(mockBoard, 2, 1, 1)
+        return self.evaluate(mockBoard)
 
         
     def positionFeature(self, mockBoard):
