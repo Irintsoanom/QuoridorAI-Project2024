@@ -114,26 +114,10 @@ class Game:
         return freePlaces
 
     def isHorizontalBlockPossible(self, x, y, freePlaces):
-        # Adjusted to check direct adjacency
-        isHorizontalPossible = (x, y+1) in freePlaces
-        check1 = (x-1, y+1) in freePlaces
-        check2 = (x+1, y+1) in freePlaces
-
-        if isHorizontalPossible:
-            condition1 = check1 and check2
-            return condition1
-        return False
+        return (x, y+1) in freePlaces
 
     def isVerticalBlockPossible(self, x, y, freePlaces):
-        # Adjusted to check direct adjacency
-        isVerticalPossible = (x+1, y) in freePlaces
-        check1 = (x+1, y+1) in freePlaces
-        check2 = (x+1, y-1) in freePlaces
-
-        if isVerticalPossible:
-            condition1 = check1 and check2
-            return condition1
-        return False
+        return (x+1, y) in freePlaces
 
 
     def blockersPlacements(self):
