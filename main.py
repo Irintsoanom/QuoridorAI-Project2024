@@ -7,19 +7,19 @@ import math
 from game import Game
 
 
-serverAddress = ('127.0.0.1', 3000)
+serverAddress = ('172.17.10.45', 3000)
 localAddress, userPort = '0.0.0.0', 35042
 pos = None
 adv = None
 enemyPos = None
 
-myUsername = "Joueur principal"
+myUsername = "Nomena-Random"
 
 connectMsg = {
     "request": "subscribe",
    "port": userPort,
    "name": myUsername,
-   "matricules": ["1"]
+   "matricules": ["22336"]
 }
 status = {
     "response": "pong"
