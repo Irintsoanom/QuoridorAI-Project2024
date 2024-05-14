@@ -8,7 +8,7 @@ from game import Game
 
 
 serverAddress = ('172.17.10.45', 3000)
-localAddress, userPort = '0.0.0.0', 35042
+localAddress, userPort = '0.0.0.0', 35044
 pos = None
 adv = None
 enemyPos = None
@@ -19,7 +19,7 @@ connectMsg = {
     "request": "subscribe",
    "port": userPort,
    "name": myUsername,
-   "matricules": ["22336"]
+   "matricules": ["422336"]
 }
 status = {
     "response": "pong"
