@@ -46,33 +46,35 @@ class Game:
         self.log_state()
         jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum',
                 'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m envole']
+        try:
+            if self.moveCount % 5 == 0 and self.moveCount > 0:
+                print("Checking for blocker placement...")
+                potentialBlocks = self.blockersPlacements()
+                if potentialBlocks:
+                    chosenBlock = random.choice(potentialBlocks)
+                    print(f"Placing blocker at: {chosenBlock}")
+                    moveType = {"type": "blocker", "position": chosenBlock}
+                    self.moveCount += 1
+                    return json.dumps({
+                        "response": "move",
+                        "move": moveType,
+                        "message": random.choice(jokeList)
+                    })
+                else:
+                    print("No valid places for blockers.")
 
-        if self.moveCount % 5 == 0 and self.moveCount > 0:
-            print("Checking for blocker placement...")
-            potentialBlocks = self.blockersPlacements()
-            if potentialBlocks:
-                chosenBlock = random.choice(potentialBlocks)
-                print(f"Placing blocker at: {chosenBlock}")
-                moveType = {"type": "blocker", "position": chosenBlock}
+            print("Calculating pawn move...")
+            bestValue, bestSequence = self.minimax(1, True)
+            if bestSequence:
+                firstAction = bestSequence[0]
+                moveType = {"type": "pawn", "position": [firstAction]}
                 self.moveCount += 1
-                return json.dumps({
-                    "response": "move",
-                    "move": moveType,
-                    "message": random.choice(jokeList)
-                })
+                print(f"Pawn move decided: {firstAction}")
             else:
-                print("No valid places for blockers.")
-
-        print("Calculating pawn move...")
-        bestValue, bestSequence = self.minimax(1, True)
-        if bestSequence:
-            firstAction = bestSequence[0]
-            moveType = {"type": "pawn", "position": [firstAction]}
-            self.moveCount += 1
-            print(f"Pawn move decided: {firstAction}")
-        else:
-            print("No valid moves available, passing turn.")
-            return json.dumps({"response": "pass"})  # Handle no moves available
+                print("No valid moves available, passing turn.")
+                return json.dumps({"response": "pass"})
+        except:
+            print('Time out')
 
         request = {
             "response": "move",
