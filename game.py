@@ -17,6 +17,7 @@ class Game:
         self.enemy = 1
         self.blockers = [10, 10]
         self.playerPosition = ()
+        self.moveCount = 0
 
     def setState(self, message):
         state = message['state']
@@ -35,28 +36,51 @@ class Game:
                     return (i, j)
         return (None, None)
     
+    def log_state(self):
+        print(f"Current board state: {self.board}")
+        print(f"Current player: {self.current}, Enemy player: {self.enemy}")
+        print(f"Available blockers: {self.blockers}")
+        print(f"Move count: {self.moveCount}")
+
     def play(self):
-        moveType = None
-        jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum', 'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m anvole']
-        bestValue, bestSequence = self.minimax(2, True)
+        self.log_state()
+        jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum',
+                'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m envole']
+        try:
+            if self.moveCount % 5 == 0 and self.moveCount > 0:
+                print("Checking for blocker placement...")
+                potentialBlocks = self.blockersPlacements()
+                if potentialBlocks:
+                    chosenBlock = random.choice(potentialBlocks)
+                    print(f"Placing blocker at: {chosenBlock}")
+                    moveType = {"type": "blocker", "position": chosenBlock}
+                    self.moveCount += 1
+                    return json.dumps({
+                        "response": "move",
+                        "move": moveType,
+                        "message": random.choice(jokeList)
+                    })
+                else:
+                    print("No valid places for blockers.")
 
-        firstAction = bestSequence[0]
-        actionType, position = firstAction[0], firstAction[1]
-        print(f'Blockers : {self.blockersPlacements()}')
-
-        if actionType == 'move':
-            print(f'pawn:  {position}')
-            moveType = {"type": "pawn", "position": [position]}
-        else:
-            print(f'Block:  {position}')
-            moveType = {"type": "blocker", "position": position}
+            print("Calculating pawn move...")
+            bestValue, bestSequence = self.minimax(1, True)
+            if bestSequence:
+                firstAction = bestSequence[0]
+                moveType = {"type": "pawn", "position": [firstAction]}
+                self.moveCount += 1
+                print(f"Pawn move decided: {firstAction}")
+            else:
+                print("No valid moves available, passing turn.")
+                return json.dumps({"response": "pass"})
+        except:
+            print('Time out')
 
         request = {
             "response": "move",
             "move": moveType,
             "message": random.choice(jokeList)
         }
-
         return json.dumps(request)
 
     def getNextPotentialPositions(self):
@@ -119,15 +143,6 @@ class Game:
         mockBoard[x][y] = 2
         mockBoard[newX][newY] = self.current
         return self.evaluate(mockBoard)
-    
-    def simulateBlocking(self,mockBoard, position):
-        print(f'Blockers : {position}')
-        for elem in position:
-            newX = elem[0]
-            newY = elem[1]
-            mockBoard[newX][newY] = 4
-            return self.evaluate(mockBoard)
-
         
     def positionFeature(self, mockBoard):
         playerPosition = self.getPlayerPosition(PlayerType.CURRENT, mockBoard)
@@ -181,51 +196,41 @@ class Game:
         positionDiff = self.positionDifference(mockBoard)
         moveToNext = self.movesToNextColumn(mockBoard)
         return positionFeature + positionDiff + moveToNext
-    
-
-    def all_actions(self):
-        move_actions = [('move', move) for move in self.getNextPotentialPositions()]
-        
-        blocker_actions = []
-        if self.blockers[self.current] > 0:  
-            blocker_actions = [('block', block) for block in self.blockersPlacements()]
-        
-        return move_actions + blocker_actions
-
 
     def minimax(self, depth, maximizingPlayer, alpha=float('-inf'), beta=float('inf')):
         if depth == 0:
             return self.evaluate(self.board), []
 
-        bestValue = float('-inf') if maximizingPlayer else float('inf')
-        bestSequence = []
-
-        actions = self.all_actions()  
-
-        for actionType, action in actions:
-            newBoard = copy.deepcopy(self.board)
-            if actionType == 'move':
-                self.simulateMove(newBoard, action)
-            else:
-                self.simulateBlocking(newBoard, action)
-
-            eval, sequence = self.minimax(depth - 1, not maximizingPlayer, alpha, beta)
-
-            if maximizingPlayer:
-                if eval > bestValue:
-                    bestValue = eval
-                    bestSequence = [(actionType, action)] + sequence
+        if maximizingPlayer:
+            maxEval = float('-inf')
+            best_sequence = []
+            for move in self.getNextPotentialPositions():
+                newBoard = copy.deepcopy(self.board)
+                eval = self.simulateMove(newBoard, move)  # Evaluate the move
+                _, sequence = self.minimax(depth - 1, False, alpha, beta)
+                if eval > maxEval:
+                    maxEval = eval
+                    best_sequence = [move] + sequence
                 alpha = max(alpha, eval)
-            else:
-                if eval < bestValue:
-                    bestValue = eval
-                    bestSequence = [(actionType, action)] + sequence
+                if alpha >= beta:
+                    break
+            return maxEval, best_sequence
+        else:
+            minEval = float('inf')
+            best_sequence = []
+            for move in self.getNextPotentialPositions():
+                newBoard = copy.deepcopy(self.board)
+                eval = self.simulateMove(newBoard, move)  # Evaluate the move
+                _, sequence = self.minimax(depth - 1, True, alpha, beta)
+                if eval < minEval:
+                    minEval = eval
+                    best_sequence = [move] + sequence
                 beta = min(beta, eval)
+                if alpha >= beta:
+                    break
+            return minEval, best_sequence
 
-            if beta <= alpha:
-                break  
 
-        return bestValue, bestSequence
 
 
     
