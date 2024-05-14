@@ -36,45 +36,50 @@ class Game:
                     return (i, j)
         return (None, None)
     
+    def log_state(self):
+        print(f"Current board state: {self.board}")
+        print(f"Current player: {self.current}, Enemy player: {self.enemy}")
+        print(f"Available blockers: {self.blockers}")
+        print(f"Move count: {self.moveCount}")
+
     def play(self):
+        self.log_state()
         jokeList = ['Prends ça!', "Mdrrrr, même pas mal", 'Croûte', 'Bim bam boum',
-                    'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m envole']
-        
-        
-        print(f"Move count: {self.moveCount}, Current Player: {self.current}")
+                'Wesh alors', 'Par la barbe de Merlin', 'Saperlipopette', 'Bisous, je m envole']
 
         if self.moveCount % 5 == 0 and self.moveCount > 0:
+            print("Checking for blocker placement...")
             potentialBlocks = self.blockersPlacements()
-            if potentialBlocks and self.blockers[self.current] > 0:
+            if potentialBlocks:
                 chosenBlock = random.choice(potentialBlocks)
-                print(f"Attempting to place a blocker at: {chosenBlock}")
+                print(f"Placing blocker at: {chosenBlock}")
                 moveType = {"type": "blocker", "position": chosenBlock}
                 self.moveCount += 1
-                print("Blocker placed.")
+                return json.dumps({
+                    "response": "move",
+                    "move": moveType,
+                    "message": random.choice(jokeList)
+                })
             else:
-                print("No valid blocker placements available or no blockers left.")
-        else:
-            bestValue, bestSequence = self.minimax(2, True)
-            if bestSequence:
-                firstAction = bestSequence[0]
-                moveType = {"type": "pawn", "position": [firstAction]}
-                print(f"Pawn move: {firstAction}")
-            else:
-                print("No valid pawn moves available.")
-                return json.dumps({"response": "pass"})
+                print("No valid places for blockers.")
 
-        self.moveCount += 1
+        print("Calculating pawn move...")
+        bestValue, bestSequence = self.minimax(1, True)
+        if bestSequence:
+            firstAction = bestSequence[0]
+            moveType = {"type": "pawn", "position": [firstAction]}
+            self.moveCount += 1
+            print(f"Pawn move decided: {firstAction}")
+        else:
+            print("No valid moves available, passing turn.")
+            return json.dumps({"response": "pass"})  # Handle no moves available
 
         request = {
             "response": "move",
             "move": moveType,
             "message": random.choice(jokeList)
         }
-
-        print("Sending move to server...")
         return json.dumps(request)
-
-
 
     def getNextPotentialPositions(self):
         self.playerPosition = self.getPlayerPosition(PlayerType.CURRENT, self.board)
@@ -136,13 +141,6 @@ class Game:
         mockBoard[x][y] = 2
         mockBoard[newX][newY] = self.current
         return self.evaluate(mockBoard)
-    
-    # def simulateBlocking(self,mockBoard, position):
-    #     for elem in position:
-    #         newX = elem[0]
-    #         newY = elem[1]
-    #         mockBoard[newX][newY] = 4
-    #         return self.evaluate(mockBoard)
         
     def positionFeature(self, mockBoard):
         playerPosition = self.getPlayerPosition(PlayerType.CURRENT, mockBoard)
